@@ -82,7 +82,7 @@ public class Transporte extends javax.swing.JFrame {
             try {
                 nombre=modelo.getValueAt(fila, 1).toString();
                 precio=modelo.getValueAt(fila, 2).toString();
-                actualizar(id,nombre,precio);
+               actualizar(id,nombre,precio); 
             } catch (NullPointerException e) {
                 // La celda que ha cambiado esta vacia.
             }
@@ -154,9 +154,10 @@ public class Transporte extends javax.swing.JFrame {
         });
         JMenuItem menuItem2=new JMenuItem("Actualizar",new ImageIcon(getClass().getResource("/Icono/refresh_256_opt.png")));
       menuItem2.addActionListener((ActionEvent ae) -> {
-          
+          cargarTablaDestinos ();
         });
         popupMenu.add(menuItem1);
+        popupMenu.add(menuItem2);
         tabla_ruta.setComponentPopupMenu(popupMenu);
     }
     
@@ -354,9 +355,18 @@ public class Transporte extends javax.swing.JFrame {
             new String [] {
                 "id", "nombre", "precio"
             }
-        ));
+        ) {
+            boolean[] canEdit = new boolean [] {
+                false, true, true
+            };
+
+            public boolean isCellEditable(int rowIndex, int columnIndex) {
+                return canEdit [columnIndex];
+            }
+        });
         jScrollPane2.setViewportView(tabla_ruta);
         if (tabla_ruta.getColumnModel().getColumnCount() > 0) {
+            tabla_ruta.getColumnModel().getColumn(0).setResizable(false);
             tabla_ruta.getColumnModel().getColumn(0).setPreferredWidth(20);
             tabla_ruta.getColumnModel().getColumn(1).setPreferredWidth(100);
             tabla_ruta.getColumnModel().getColumn(2).setPreferredWidth(30);
