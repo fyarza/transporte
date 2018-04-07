@@ -23,7 +23,11 @@ import javax.swing.ImageIcon;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPopupMenu;
+import javax.swing.JTable;
+import javax.swing.event.TableModelEvent;
+import javax.swing.event.TableModelListener;
 import javax.swing.table.DefaultTableModel;
+import javax.swing.table.TableModel;
 
 /**
  *
@@ -44,8 +48,49 @@ public class Transporte extends javax.swing.JFrame {
          poputTable();
          total1=0.0;
         txt_precio.setFormatterFactory(new javax.swing.text.DefaultFormatterFactory(new javax.swing.text.NumberFormatter(totalFormat)));
+        anadeListenerAlModelo(tabla_ruta);
         //txt_precio.setValue(total1);
     }
+    
+    
+    
+     private void anadeListenerAlModelo(JTable tabla) {
+        tabla.getModel().addTableModelListener((TableModelEvent evento) -> {
+            actualizartabla(evento);
+        });
+    }
+      protected void actualizartabla(TableModelEvent evento) {
+        // Solo se trata el evento UPDATE, correspondiente al cambio de valor
+        // de una celda.
+        if (evento.getType() == TableModelEvent.UPDATE) {
+            String id,nombre,precio;
+            // Se obtiene el modelo de la tabla y la fila/columna que han cambiado.
+            TableModel modelo = ((TableModel) (evento.getSource()));
+            int fila = evento.getFirstRow();
+            int columna = evento.getColumn();
+            
+            id=modelo.getValueAt(fila, 0).toString();
+            
+            // Los cambios en la ultima fila y columna se ignoran.
+            // Este return es necesario porque cuando nuestro codigo modifique
+            // los valores de las sumas en esta fila y columna, saltara nuevamente
+            // el evento, metiendonos en un bucle recursivo de llamadas a este
+            // metodo.
+            if (fila == 0 || columna == 0) {
+                return;
+            }
+            try {
+                nombre=modelo.getValueAt(fila, 1).toString();
+                precio=modelo.getValueAt(fila, 2).toString();
+                actualizar(id,nombre,precio);
+            } catch (NullPointerException e) {
+                // La celda que ha cambiado esta vacia.
+            }
+        }
+
+    }
+    
+    
     
     private void eliminarruta(){
      int fsel = this.tabla_ruta.getSelectedRow();
@@ -76,7 +121,25 @@ public class Transporte extends javax.swing.JFrame {
                 }
             }
         }
+    }
     
+    private boolean actualizar(String id,String nombre, String precio){
+        boolean resul=false;
+        if(!nombre.isEmpty()&&!precio.isEmpty()){
+        ConexionBD con=new ConexionBD();
+        try {
+            Connection conexion=con.obtConexion();
+            Statement st=conexion.createStatement();
+            String SQL ="UPDATE p.ruta set nombre='" + nombre + "',precio='" + precio + "'where id='" + id + "'";
+            st.executeUpdate(SQL);
+            st.close();
+            conexion.close();
+            resul=true;
+        } catch (SQLException ex) {
+            Logger.getLogger(Transporte.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        }
+        return resul;
     }
     
     
@@ -88,6 +151,10 @@ public class Transporte extends javax.swing.JFrame {
             public void actionPerformed(ActionEvent ae) {
                eliminarruta();
             }
+        });
+        JMenuItem menuItem2=new JMenuItem("Actualizar",new ImageIcon(getClass().getResource("/Icono/refresh_256_opt.png")));
+      menuItem2.addActionListener((ActionEvent ae) -> {
+          
         });
         popupMenu.add(menuItem1);
         tabla_ruta.setComponentPopupMenu(popupMenu);
