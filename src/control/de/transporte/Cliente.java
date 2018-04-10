@@ -50,7 +50,7 @@ public class Cliente extends javax.swing.JFrame {
         try {
             conexion = con.obtConexion();
             Statement st = conexion.createStatement();
-            String sql = "Select concat(id,'-',nombre) as nombre from p.ruta";
+            String sql = "Select concat(id,'-',origen,'-',destino) as nombre from p.ruta where tipo='Regular'";
             ResultSet rs=st.executeQuery(sql);
             cb_direcciones.removeAllItems();
             while(rs.next()){
@@ -210,7 +210,7 @@ public class Cliente extends javax.swing.JFrame {
      Connection conexion;
         try {
             conexion = con.obtConexion();
-            sql= "select a.id,a.nombre,b.nombre from p.ruta b left join p.cliente a on (b.id=a.direccion)";
+            sql= "select a.id,a.nombre,b.destino from p.cliente a left join p.ruta b on (b.id=a.direccion)";
             PreparedStatement pstm = conexion.prepareCall(sql);
             ResultSet rset = pstm.executeQuery();
             ResultSetMetaData rsmd=rset.getMetaData();
