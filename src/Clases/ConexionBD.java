@@ -51,41 +51,5 @@ public class ConexionBD {
             return null;
         }
  }
-    
-public boolean insertarRuta(rutaobj ruta){
-        boolean resul = false;
-        if (!ruta.esVacio()){
-        try {
-           Connection conexion = this.obtConexion();
-            try (Statement stmt = conexion.createStatement()) {
-                String SQL = "INSERT INTO p.ruta (nombre,precio) values ('"+ruta.getNombre()+"','"+ruta.getPrecio()+"')";
-                stmt.executeUpdate(SQL);
-                resul = true;
-            }
-            
-        } catch (SQLException ex) {
-            Logger.getLogger(ConexionBD.class.getName()).log(Level.SEVERE, null, ex);
-        }
-        }
-        return resul;
-    }
-
-
-    public boolean insertardestino(realizaobj realiza){
-       boolean resul = false;
-        if (!realiza.esVacio()){
-        try {
-           Connection conexion = this.obtConexion();
-            try (Statement stmt = conexion.createStatement()) {
-                String SQL = "INSERT INTO p.realiza  (fecha,hora,destino) values ('"+realiza.getFecha()+"','"+realiza.getHora()+"','"+realiza.getDestino()+"')";
-                stmt.executeUpdate(SQL);
-                resul = true;
-            }
-        } catch (SQLException ex) {
-            Logger.getLogger(ConexionBD.class.getName()).log(Level.SEVERE, null, ex);
-        }
-        }
-        return resul;
-    }
 }
 

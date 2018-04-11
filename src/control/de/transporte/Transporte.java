@@ -49,9 +49,14 @@ public class Transporte extends javax.swing.JFrame {
          total1=0.0;
         txt_precio.setFormatterFactory(new javax.swing.text.DefaultFormatterFactory(new javax.swing.text.NumberFormatter(totalFormat)));
         anadeListenerAlModelo(tabla_ruta);
-        //txt_precio.setValue(total1);
+        this.setDefaultCloseOperation(DISPOSE_ON_CLOSE);
+       entrada();
     }
     
+    private void entrada(){
+         txt_origen.setText("Omega C.A");
+        txt_origen.setEnabled(false);
+    }
     
     
      private void anadeListenerAlModelo(JTable tabla) {
@@ -63,7 +68,7 @@ public class Transporte extends javax.swing.JFrame {
         // Solo se trata el evento UPDATE, correspondiente al cambio de valor
         // de una celda.
         if (evento.getType() == TableModelEvent.UPDATE) {
-            String id,nombre,precio;
+            String id,origen, destino,precio,tipo;
             // Se obtiene el modelo de la tabla y la fila/columna que han cambiado.
             TableModel modelo = ((TableModel) (evento.getSource()));
             int fila = evento.getFirstRow();
@@ -76,22 +81,23 @@ public class Transporte extends javax.swing.JFrame {
             // los valores de las sumas en esta fila y columna, saltara nuevamente
             // el evento, metiendonos en un bucle recursivo de llamadas a este
             // metodo.
-            if (fila == 0 || columna == 0) {
+            if ( columna == 0) {
                 return;
             }
             try {
-                nombre=modelo.getValueAt(fila, 1).toString();
-                precio=modelo.getValueAt(fila, 2).toString();
-               actualizar(id,nombre,precio); 
+                origen=modelo.getValueAt(fila, 1).toString();
+                destino=modelo.getValueAt(fila, 2).toString();
+                precio=modelo.getValueAt(fila, 3).toString();
+                tipo=modelo.getValueAt(fila, 4).toString();
+                
+                
+               actualizar(id,origen,destino,precio,tipo); 
             } catch (NullPointerException e) {
                 // La celda que ha cambiado esta vacia.
             }
         }
 
     }
-    
-    
-    
     private void eliminarruta(){
      int fsel = this.tabla_ruta.getSelectedRow();
         if (fsel == -1)
@@ -123,14 +129,14 @@ public class Transporte extends javax.swing.JFrame {
         }
     }
     
-    private boolean actualizar(String id,String nombre, String precio){
+    private boolean actualizar(String id,String origen,String destino, String precio,String tipo){
         boolean resul=false;
-        if(!nombre.isEmpty()&&!precio.isEmpty()){
+        if(!origen.isEmpty()&&!precio.isEmpty()&&!destino.isEmpty()){
         ConexionBD con=new ConexionBD();
         try {
             Connection conexion=con.obtConexion();
             Statement st=conexion.createStatement();
-            String SQL ="UPDATE p.ruta set nombre='" + nombre + "',precio='" + precio + "'where id='" + id + "'";
+            String SQL ="UPDATE p.ruta set origen='"+origen+"',destino='" + destino + "',precio='" + precio + "',tipo='"+tipo+"'where id='" + id + "'";
             st.executeUpdate(SQL);
             st.close();
             conexion.close();
@@ -161,13 +167,19 @@ public class Transporte extends javax.swing.JFrame {
         tabla_ruta.setComponentPopupMenu(popupMenu);
     }
     
-    private boolean guardar(){
+    private boolean guardar(boolean tipo){
         boolean resul=false;
         ConexionBD con= new ConexionBD();
         try {
             Connection conexion=con.obtConexion();
             Statement st=conexion.createStatement();
-            String Sql="insert into p.ruta (nombre,precio) values ('"+txt_nombre.getText()+"','"+txt_precio.getText()+"')";
+            String Sql;
+            
+            if (!tipo){
+            Sql="insert into p.ruta (destino,precio,tipo) values ('"+txt_destino.getText()+"','"+txt_precio.getText()+"','"+cb_tipo.getSelectedItem().toString()+"')";
+            }else{
+             Sql="insert into p.ruta (destino,precio,origen,tipo) values ('"+txt_destino.getText()+"','"+txt_precio.getText()+"','"+txt_origen.getText()+"','"+cb_tipo.getSelectedItem().toString()+"')";
+            }
             st.executeUpdate(Sql);
             st.close();
             resul=true;
@@ -193,7 +205,7 @@ public class Transporte extends javax.swing.JFrame {
      Connection conexion;
         try {
             conexion = con.obtConexion();
-            sql= "select * from p.ruta";
+            sql= "select id,origen,destino,precio,tipo from p.ruta";
             PreparedStatement pstm = conexion.prepareCall(sql);
             ResultSet rset = pstm.executeQuery();
             ResultSetMetaData rsmd=rset.getMetaData();
@@ -214,16 +226,21 @@ public class Transporte extends javax.swing.JFrame {
         }
      
  }
+    private void desbloquear(){
+         txt_origen.setText("");
+        txt_origen.setEnabled(true);
+        txt_origen.requestFocus();
+    }
     private void limpiar(){
-        txt_nombre.setText(null);
+        txt_destino.setText(null);
         txt_precio.setText(null);
     }
     private boolean validad(){
         boolean resul=true;
-        if(txt_nombre.getText().isEmpty()){
+        if(txt_origen.getText().isEmpty()){
             JOptionPane.showMessageDialog(null, "Campo Nombre Vacio", "Error", JOptionPane.ERROR_MESSAGE);
             resul=false;
-            txt_nombre.requestFocus();
+            txt_origen.requestFocus();
         }else if(txt_precio.getText().isEmpty()){
             JOptionPane.showMessageDialog(null, "Campo Precio Vacio", "Error", JOptionPane.ERROR_MESSAGE);
             resul=false;
@@ -250,8 +267,13 @@ public class Transporte extends javax.swing.JFrame {
         btn_guardar = new org.edisoncor.gui.button.ButtonAction();
         jLabel1 = new javax.swing.JLabel();
         jLabel2 = new javax.swing.JLabel();
-        txt_nombre = new javax.swing.JTextField();
+        txt_origen = new javax.swing.JTextField();
         txt_precio = new javax.swing.JFormattedTextField();
+        jLabel3 = new javax.swing.JLabel();
+        txt_destino = new javax.swing.JTextField();
+        cb_tipo = new javax.swing.JComboBox<>();
+        jLabel4 = new javax.swing.JLabel();
+        buttonTransluceIcon1 = new org.edisoncor.gui.button.ButtonTransluceIcon();
         jPanel4 = new javax.swing.JPanel();
         jScrollPane2 = new javax.swing.JScrollPane();
         tabla_ruta = new javax.swing.JTable();
@@ -283,6 +305,7 @@ public class Transporte extends javax.swing.JFrame {
 
         jPanel2.setBackground(new java.awt.Color(255, 255, 255));
         jPanel2.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(153, 153, 153), 2), "Informacion", javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.DEFAULT_POSITION, new java.awt.Font("Tahoma", 1, 14))); // NOI18N
+        jPanel2.setLayout(new org.netbeans.lib.awtextra.AbsoluteLayout());
 
         btn_guardar.setText("Guardar");
         btn_guardar.addActionListener(new java.awt.event.ActionListener() {
@@ -290,18 +313,22 @@ public class Transporte extends javax.swing.JFrame {
                 btn_guardarActionPerformed(evt);
             }
         });
+        jPanel2.add(btn_guardar, new org.netbeans.lib.awtextra.AbsoluteConstraints(308, 119, -1, -1));
 
         jLabel1.setFont(new java.awt.Font("Tahoma", 1, 12)); // NOI18N
-        jLabel1.setText("Nombre:");
+        jLabel1.setText("Origen:");
+        jPanel2.add(jLabel1, new org.netbeans.lib.awtextra.AbsoluteConstraints(65, 52, -1, -1));
 
         jLabel2.setFont(new java.awt.Font("Tahoma", 1, 12)); // NOI18N
         jLabel2.setText("Precio:");
+        jPanel2.add(jLabel2, new org.netbeans.lib.awtextra.AbsoluteConstraints(65, 90, 51, -1));
 
-        txt_nombre.addKeyListener(new java.awt.event.KeyAdapter() {
+        txt_origen.addKeyListener(new java.awt.event.KeyAdapter() {
             public void keyTyped(java.awt.event.KeyEvent evt) {
-                txt_nombreKeyTyped(evt);
+                txt_origenKeyTyped(evt);
             }
         });
+        jPanel2.add(txt_origen, new org.netbeans.lib.awtextra.AbsoluteConstraints(120, 50, 177, -1));
 
         txt_precio.setFormatterFactory(new javax.swing.text.DefaultFormatterFactory(new javax.swing.text.NumberFormatter(new java.text.DecimalFormat("#,###.00"))));
         txt_precio.addKeyListener(new java.awt.event.KeyAdapter() {
@@ -309,42 +336,28 @@ public class Transporte extends javax.swing.JFrame {
                 txt_precioKeyTyped(evt);
             }
         });
+        jPanel2.add(txt_precio, new org.netbeans.lib.awtextra.AbsoluteConstraints(120, 90, 177, -1));
 
-        javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(jPanel2);
-        jPanel2.setLayout(jPanel2Layout);
-        jPanel2Layout.setHorizontalGroup(
-            jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanel2Layout.createSequentialGroup()
-                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(jPanel2Layout.createSequentialGroup()
-                        .addGap(247, 247, 247)
-                        .addComponent(btn_guardar, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addGroup(jPanel2Layout.createSequentialGroup()
-                        .addGap(166, 166, 166)
-                        .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                            .addComponent(jLabel1)
-                            .addComponent(jLabel2, javax.swing.GroupLayout.PREFERRED_SIZE, 51, javax.swing.GroupLayout.PREFERRED_SIZE))
-                        .addGap(44, 44, 44)
-                        .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(txt_nombre, javax.swing.GroupLayout.PREFERRED_SIZE, 177, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(txt_precio, javax.swing.GroupLayout.PREFERRED_SIZE, 177, javax.swing.GroupLayout.PREFERRED_SIZE))))
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-        );
-        jPanel2Layout.setVerticalGroup(
-            jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel2Layout.createSequentialGroup()
-                .addContainerGap(25, Short.MAX_VALUE)
-                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(txt_nombre, javax.swing.GroupLayout.PREFERRED_SIZE, 20, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jLabel1))
-                .addGap(18, 18, 18)
-                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(txt_precio, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jLabel2))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(btn_guardar, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap())
-        );
+        jLabel3.setFont(new java.awt.Font("Tahoma", 1, 12)); // NOI18N
+        jLabel3.setText("Destino: ");
+        jPanel2.add(jLabel3, new org.netbeans.lib.awtextra.AbsoluteConstraints(394, 52, -1, -1));
+        jPanel2.add(txt_destino, new org.netbeans.lib.awtextra.AbsoluteConstraints(453, 50, 189, -1));
+
+        cb_tipo.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Regular", "Externo" }));
+        jPanel2.add(cb_tipo, new org.netbeans.lib.awtextra.AbsoluteConstraints(453, 88, 189, -1));
+
+        jLabel4.setFont(new java.awt.Font("Tahoma", 1, 12)); // NOI18N
+        jLabel4.setText("Tipo:");
+        jPanel2.add(jLabel4, new org.netbeans.lib.awtextra.AbsoluteConstraints(385, 90, -1, -1));
+
+        buttonTransluceIcon1.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Icono/Editar3.png"))); // NOI18N
+        buttonTransluceIcon1.setText("Cambiar");
+        buttonTransluceIcon1.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                buttonTransluceIcon1ActionPerformed(evt);
+            }
+        });
+        jPanel2.add(buttonTransluceIcon1, new org.netbeans.lib.awtextra.AbsoluteConstraints(300, 30, 80, 60));
 
         jPanel4.setBackground(new java.awt.Color(255, 255, 255));
 
@@ -353,11 +366,11 @@ public class Transporte extends javax.swing.JFrame {
 
             },
             new String [] {
-                "id", "nombre", "precio"
+                "ID", "Origen", "Destino", "Precio", "Tipo"
             }
         ) {
             boolean[] canEdit = new boolean [] {
-                false, true, true
+                false, true, true, true, true
             };
 
             public boolean isCellEditable(int rowIndex, int columnIndex) {
@@ -369,20 +382,27 @@ public class Transporte extends javax.swing.JFrame {
             tabla_ruta.getColumnModel().getColumn(0).setResizable(false);
             tabla_ruta.getColumnModel().getColumn(0).setPreferredWidth(20);
             tabla_ruta.getColumnModel().getColumn(1).setPreferredWidth(100);
-            tabla_ruta.getColumnModel().getColumn(2).setPreferredWidth(30);
+            tabla_ruta.getColumnModel().getColumn(2).setPreferredWidth(100);
+            tabla_ruta.getColumnModel().getColumn(3).setPreferredWidth(30);
+            tabla_ruta.getColumnModel().getColumn(4).setMinWidth(80);
+            tabla_ruta.getColumnModel().getColumn(4).setPreferredWidth(80);
+            tabla_ruta.getColumnModel().getColumn(4).setMaxWidth(80);
         }
 
         javax.swing.GroupLayout jPanel4Layout = new javax.swing.GroupLayout(jPanel4);
         jPanel4.setLayout(jPanel4Layout);
         jPanel4Layout.setHorizontalGroup(
             jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanel4Layout.createSequentialGroup()
-                .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 623, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(0, 0, Short.MAX_VALUE))
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel4Layout.createSequentialGroup()
+                .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 746, Short.MAX_VALUE)
+                .addContainerGap())
         );
         jPanel4Layout.setVerticalGroup(
             jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 121, Short.MAX_VALUE)
+            .addGroup(jPanel4Layout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 121, Short.MAX_VALUE)
+                .addContainerGap())
         );
 
         javax.swing.GroupLayout jPanel3Layout = new javax.swing.GroupLayout(jPanel3);
@@ -392,17 +412,17 @@ public class Transporte extends javax.swing.JFrame {
             .addComponent(labelTask1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
             .addGroup(jPanel3Layout.createSequentialGroup()
                 .addContainerGap()
-                .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                    .addComponent(jPanel2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(jPanel4, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                .addContainerGap(11, Short.MAX_VALUE))
+                .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jPanel4, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jPanel2, javax.swing.GroupLayout.PREFERRED_SIZE, 751, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addContainerGap(24, Short.MAX_VALUE))
         );
         jPanel3Layout.setVerticalGroup(
             jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel3Layout.createSequentialGroup()
                 .addComponent(labelTask1, javax.swing.GroupLayout.PREFERRED_SIZE, 79, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jPanel2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(jPanel2, javax.swing.GroupLayout.PREFERRED_SIZE, 167, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jPanel4, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
@@ -412,15 +432,13 @@ public class Transporte extends javax.swing.JFrame {
         jPanel1.setLayout(jPanel1Layout);
         jPanel1Layout.setHorizontalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanel1Layout.createSequentialGroup()
-                .addComponent(jPanel3, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(0, 0, Short.MAX_VALUE))
+            .addComponent(jPanel3, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
         );
         jPanel1Layout.setVerticalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel1Layout.createSequentialGroup()
                 .addComponent(jPanel3, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(0, 7, Short.MAX_VALUE))
+                .addGap(0, 30, Short.MAX_VALUE))
         );
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
@@ -438,37 +456,54 @@ public class Transporte extends javax.swing.JFrame {
     }// </editor-fold>//GEN-END:initComponents
 
     private void btn_guardarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btn_guardarActionPerformed
-       if(validad())        
-        if(guardar()){
+       if(validad()) {
+           boolean tipo=false;
+           if(cb_tipo.getSelectedItem().toString().equals("Externo")){
+            tipo=true;   
+           }
+            if(guardar(tipo)){
             JOptionPane.showMessageDialog(null, "Registro Guardado Exitosamente","Exito",JOptionPane.INFORMATION_MESSAGE);
             limpiar();
             cargarTablaDestinos();
-            txt_nombre.requestFocus();
-        }else{
+            txt_destino.requestFocus();
+            entrada();
+            }else{
             JOptionPane.showMessageDialog(null, "Ocurrio un Error en el Guardado","ERROR", JOptionPane.ERROR_MESSAGE);
-        }
+            }   
+       }       
+        
        
     }//GEN-LAST:event_btn_guardarActionPerformed
 
-    private void txt_nombreKeyTyped(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_txt_nombreKeyTyped
+    private void txt_origenKeyTyped(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_txt_origenKeyTyped
       if(evt.getKeyChar()==KeyEvent.VK_ENTER){
           txt_precio.requestFocus();
       }
-    }//GEN-LAST:event_txt_nombreKeyTyped
+    }//GEN-LAST:event_txt_origenKeyTyped
 
     private void txt_precioKeyTyped(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_txt_precioKeyTyped
         if(evt.getKeyChar()==KeyEvent.VK_ENTER){
-         if(validad())        
-        if(guardar()){
+        if(validad()) {
+           boolean tipo=false;
+           if(cb_tipo.getSelectedItem().toString().equals("Externo")){
+            tipo=true;   
+           }
+            if(guardar(tipo)){
             JOptionPane.showMessageDialog(null, "Registro Guardado Exitosamente","Exito",JOptionPane.INFORMATION_MESSAGE);
             limpiar();
             cargarTablaDestinos();
-            txt_nombre.requestFocus();
-        }else{
+            txt_destino.requestFocus();
+            entrada();
+            }else{
             JOptionPane.showMessageDialog(null, "Ocurrio un Error en el Guardado","ERROR", JOptionPane.ERROR_MESSAGE);
-        }
+            }   
+       }   
       }
     }//GEN-LAST:event_txt_precioKeyTyped
+
+    private void buttonTransluceIcon1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_buttonTransluceIcon1ActionPerformed
+     desbloquear();
+    }//GEN-LAST:event_buttonTransluceIcon1ActionPerformed
 
     /**
      * @param args the command line arguments
@@ -507,8 +542,12 @@ public class Transporte extends javax.swing.JFrame {
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private org.edisoncor.gui.button.ButtonAction btn_guardar;
+    private org.edisoncor.gui.button.ButtonTransluceIcon buttonTransluceIcon1;
+    private javax.swing.JComboBox<String> cb_tipo;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
+    private javax.swing.JLabel jLabel3;
+    private javax.swing.JLabel jLabel4;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel2;
     private javax.swing.JPanel jPanel3;
@@ -518,7 +557,8 @@ public class Transporte extends javax.swing.JFrame {
     private javax.swing.JTable jTable1;
     private org.edisoncor.gui.label.LabelTask labelTask1;
     private javax.swing.JTable tabla_ruta;
-    private javax.swing.JTextField txt_nombre;
+    private javax.swing.JTextField txt_destino;
+    private javax.swing.JTextField txt_origen;
     private javax.swing.JFormattedTextField txt_precio;
     // End of variables declaration//GEN-END:variables
 }

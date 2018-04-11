@@ -25,7 +25,7 @@ public class realizaobj {
     }
 
     public boolean esVacio(){
-        return(this.fecha==null&&this.hora==null&&this.destino==null);
+        return(this.fecha.isEmpty()&&this.hora.isEmpty()&&this.destino.isEmpty());
     }
     public String getFecha() {
         return fecha;

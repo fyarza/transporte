@@ -5,29 +5,47 @@
  */
 package modelo;
 
-import sun.invoke.empty.Empty;
-
 /**
  *
  * @author Federico Yarza
  */
 public class rutaobj {
-    String id, nombre, precio;
+    String id, origen,destino, precio,tipo;
 
-    public rutaobj(String id, String nombre, String precio) {
+    public rutaobj(String id, String origen,String destino, String precio,String tipo) {
         this.id = id;
-        this.nombre = nombre;
+        this.origen=origen;
+        this.destino = destino;
         this.precio = precio;
+        this.tipo=tipo;
     }
     
     public rutaobj(){
         this.id=null;
-        this.nombre=null;
+        this.destino=null;
         this.precio=null;
+        this.origen=null;
+        this.tipo=null;
+    }
+
+    public String getOrigen() {
+        return origen;
+    }
+
+    public void setOrigen(String origen) {
+        this.origen = origen;
+    }
+
+    public String getTipo() {
+        return tipo;
+    }
+
+    public void setTipo(String tipo) {
+        this.tipo = tipo;
     }
     
     public boolean esVacio(){
-        return (this.nombre == null && this.id == null && this.precio == null);
+        return (this.destino.isEmpty() && this.id.isEmpty() && this.precio.isEmpty()&&this.origen.isEmpty()&&this.tipo.isEmpty());
     }
 
     public String getId() {
@@ -38,12 +56,12 @@ public class rutaobj {
         this.id = id;
     }
 
-    public String getNombre() {
-        return nombre;
+    public String getDestino() {
+        return destino;
     }
 
-    public void setNombre(String nombre) {
-        this.nombre = nombre;
+    public void setDestino(String destino) {
+        this.destino = destino;
     }
 
     public String getPrecio() {

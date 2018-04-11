@@ -15,9 +15,9 @@ public class ControlDeTransporte {
      * @param args the command line arguments
      */
     public static void main(String[] args) {
-        Transporte T=new Transporte();
-        T.setLocationRelativeTo(null);
-        T.setVisible(true);
+       Principal principal=new Principal();
+        principal.setLocationRelativeTo(null);
+        principal.setVisible(true);
         
     }
     
