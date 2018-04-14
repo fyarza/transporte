@@ -5,19 +5,135 @@
  */
 package control.de.transporte;
 
-/**
- *
- * @author Federico Yarza
- */
+import Clases.ConexionBD;
+import java.sql.Connection;
+import java.sql.Date;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.text.Format;
+import java.text.NumberFormat;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.swing.JFormattedTextField;
+import javax.swing.JOptionPane;
+
+
 public class ControldeRutas extends javax.swing.JFrame {
 
-    /**
-     * Creates new form ControldeRutas
-     */
+  private double costo,costo_adicional;
+  private int hora;
     public ControldeRutas() {
         initComponents();
          this.setDefaultCloseOperation(DISPOSE_ON_CLOSE);
+         cargarclientes();
+         cargardirecciones();
+         costo=0.0;
+         hora=0;
+         costo_adicional=0.0;
+         entrada();
+        
+        
     }
+    
+    private String obt_fecha(com.toedter.calendar.JDateChooser fecha){
+        /*jfnac es de tipo JDateChooser
+        fnacim es de tipo JTextFiel donde muestro la fecha que seleccione
+        */
+        String fnacim="";
+        try {
+        String formato = fecha.getDateFormatString();
+        java.util.Date date = fecha.getDate();
+        SimpleDateFormat sdf = new SimpleDateFormat(formato);
+        fnacim = String.valueOf(sdf.format(date));
+        
+        } catch (Exception e) {
+           // JOptionPane.showMessageDialog(null, "Al menos elija una FECHA DE NACIMIENTO VALIDA ", "Error..!!", JOptionPane.ERROR_MESSAGE);
+        }
+        return fnacim;
+    }
+    
+    private void entrada(){
+       txt_costo_primario.setValue(costo);
+       txt_costo_adicional.setValue(costo_adicional);
+    }
+    
+    
+    
+     private void cargarclientes(){
+        ConexionBD con = new ConexionBD();
+        Connection conexion;
+        try {
+            conexion = con.obtConexion();
+            Statement st = conexion.createStatement();
+            String sql = "Select concat(id,'-',nombre) as nombre from p.cliente";
+            ResultSet rs=st.executeQuery(sql);
+            cb_clientes.removeAllItems();
+            while(rs.next()){
+                cb_clientes.addItem(rs.getString("nombre"));
+            }
+            st.close();
+            rs.close();
+            conexion.close();
+            
+        } catch (SQLException ex) {
+            Logger.getLogger(Cliente.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        
+        
+    }
+     
+     
+     
+      private void cargardirecciones(){
+        ConexionBD con = new ConexionBD();
+        Connection conexion;
+        try {
+            conexion = con.obtConexion();
+            Statement st = conexion.createStatement();
+            String sql = "Select concat(id,'-',origen,'-',destino) as nombre from p.ruta";
+            ResultSet rs=st.executeQuery(sql);
+            cb_destinos.removeAllItems();
+            while(rs.next()){
+                cb_destinos.addItem(rs.getString("nombre"));
+            }
+            st.close();
+            rs.close();
+            conexion.close();
+            
+        } catch (SQLException ex) {
+            Logger.getLogger(Cliente.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        
+        
+    }
+      
+      private void guardarrelacion(){
+          ConexionBD con  = new ConexionBD();
+      try {
+          Connection conexion = con.obtConexion();
+          Statement st = conexion.createStatement();
+          String[] arraydestino = cb_destinos.getSelectedItem().toString().split("-");
+          String[] arraycliente = cb_clientes.getSelectedItem().toString().split("-");
+          String Sql="INSERT INTO p.realiza (fecha,hora,destino,cliente,costo_adicional,tiempo_espera,hora_espera)"
+                  + " values ('"+obt_fecha(txt_fecha)+"','"+HH.getValue()+":"+MM.getValue()+" "+TT.getSelectedItem().toString()+"',"
+                  + "'"+arraydestino[0]+"','"+arraycliente[0]+"','"+txt_costo_adicional.getValue()+"','"+HH_E.getValue()+":"+MM_E.getValue()+"',"
+                  + "'"+txt_costo_primario.getValue()+"')";
+          JOptionPane.showMessageDialog(null, Sql);
+          st.executeUpdate(Sql);
+          JOptionPane.showMessageDialog(null, "Registro Guardado Exitosamente", "Guardado...", JOptionPane.INFORMATION_MESSAGE);
+          st.close();
+          conexion.close();
+      } catch (SQLException ex) {
+        JOptionPane.showMessageDialog (null, "Error:"+ex.getMessage(), "error", JOptionPane.ERROR_MESSAGE);
+      }
+          
+      }
+    
+    
+    
 
     /**
      * This method is called from within the constructor to initialize the form.
@@ -28,21 +144,274 @@ public class ControldeRutas extends javax.swing.JFrame {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
+        jLabel1 = new javax.swing.JLabel();
+        jPanel1 = new javax.swing.JPanel();
+        labelTask1 = new org.edisoncor.gui.label.LabelTask();
+        jPanel2 = new javax.swing.JPanel();
+        jPanel3 = new javax.swing.JPanel();
+        jLabel2 = new javax.swing.JLabel();
+        cb_clientes = new javax.swing.JComboBox<>();
+        jLabel3 = new javax.swing.JLabel();
+        cb_destinos = new javax.swing.JComboBox<>();
+        jLabel4 = new javax.swing.JLabel();
+        txt_fecha = new com.toedter.calendar.JDateChooser();
+        jLabel5 = new javax.swing.JLabel();
+        jLabel7 = new javax.swing.JLabel();
+        jLabel9 = new javax.swing.JLabel();
+        lb_costo = new javax.swing.JLabel();
+        jLabel6 = new javax.swing.JLabel();
+        HH_E = new javax.swing.JSpinner();
+        jLabel8 = new javax.swing.JLabel();
+        MM_E = new javax.swing.JSpinner();
+        jLabel10 = new javax.swing.JLabel();
+        HH = new javax.swing.JSpinner();
+        jLabel11 = new javax.swing.JLabel();
+        MM = new javax.swing.JSpinner();
+        jLabel12 = new javax.swing.JLabel();
+        TT = new javax.swing.JComboBox<>();
+        jLabel13 = new javax.swing.JLabel();
+        txt_costo_adicional = new javax.swing.JFormattedTextField();
+        txt_costo_primario = new javax.swing.JFormattedTextField();
+        btn_guardar = new org.edisoncor.gui.button.ButtonAction();
+
+        jLabel1.setText("jLabel1");
+
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
+
+        jPanel1.setBackground(new java.awt.Color(255, 255, 255));
+
+        labelTask1.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+        labelTask1.setIcon(new javax.swing.ImageIcon(getClass().getResource("/imagenes/camionero_bolsa_trabajo_opt.png"))); // NOI18N
+        labelTask1.setText("Cliente");
+        labelTask1.setCategoryFont(new java.awt.Font("Arial", 0, 36)); // NOI18N
+        labelTask1.setDescription("Rutas Diarias");
+
+        jPanel2.setBackground(new java.awt.Color(255, 255, 255));
+        jPanel2.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(0, 0, 0)), "Informacion", javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.DEFAULT_POSITION, new java.awt.Font("Tahoma", 1, 12))); // NOI18N
+
+        jPanel3.setBackground(new java.awt.Color(255, 255, 255));
+        jPanel3.setLayout(new org.netbeans.lib.awtextra.AbsoluteLayout());
+
+        jLabel2.setFont(new java.awt.Font("Tahoma", 1, 12)); // NOI18N
+        jLabel2.setText("Cliente: ");
+        jPanel3.add(jLabel2, new org.netbeans.lib.awtextra.AbsoluteConstraints(0, 0, 388, 21));
+
+        jPanel3.add(cb_clientes, new org.netbeans.lib.awtextra.AbsoluteConstraints(388, 0, 388, 21));
+
+        jLabel3.setFont(new java.awt.Font("Tahoma", 1, 12)); // NOI18N
+        jLabel3.setText("Destino:");
+        jPanel3.add(jLabel3, new org.netbeans.lib.awtextra.AbsoluteConstraints(0, 36, 388, 21));
+
+        jPanel3.add(cb_destinos, new org.netbeans.lib.awtextra.AbsoluteConstraints(388, 36, 388, 21));
+
+        jLabel4.setFont(new java.awt.Font("Tahoma", 1, 12)); // NOI18N
+        jLabel4.setText("Fecha:");
+        jPanel3.add(jLabel4, new org.netbeans.lib.awtextra.AbsoluteConstraints(0, 72, 388, 21));
+
+        txt_fecha.setFont(new java.awt.Font("Tahoma", 1, 12)); // NOI18N
+        jPanel3.add(txt_fecha, new org.netbeans.lib.awtextra.AbsoluteConstraints(388, 72, 388, 21));
+
+        jLabel5.setFont(new java.awt.Font("Tahoma", 1, 12)); // NOI18N
+        jLabel5.setText("Hora:");
+        jPanel3.add(jLabel5, new org.netbeans.lib.awtextra.AbsoluteConstraints(0, 108, 388, 21));
+
+        jLabel7.setFont(new java.awt.Font("Tahoma", 1, 12)); // NOI18N
+        jLabel7.setText("Tiempo de Espera:");
+        jPanel3.add(jLabel7, new org.netbeans.lib.awtextra.AbsoluteConstraints(0, 144, 120, 21));
+
+        jLabel9.setFont(new java.awt.Font("Tahoma", 1, 12)); // NOI18N
+        jLabel9.setText("Costo de Tiempo:");
+        jPanel3.add(jLabel9, new org.netbeans.lib.awtextra.AbsoluteConstraints(0, 180, 388, 21));
+
+        lb_costo.setFont(new java.awt.Font("Tahoma", 1, 12)); // NOI18N
+        lb_costo.setText(" ");
+        jPanel3.add(lb_costo, new org.netbeans.lib.awtextra.AbsoluteConstraints(388, 180, 388, 21));
+
+        jLabel6.setFont(new java.awt.Font("Tahoma", 1, 12)); // NOI18N
+        jLabel6.setText("Costo Adicional:");
+        jPanel3.add(jLabel6, new org.netbeans.lib.awtextra.AbsoluteConstraints(0, 216, 388, 21));
+
+        HH_E.setFont(new java.awt.Font("Tahoma", 1, 12)); // NOI18N
+        HH_E.setModel(new javax.swing.SpinnerNumberModel(0, 0, 24, 1));
+        HH_E.addChangeListener(new javax.swing.event.ChangeListener() {
+            public void stateChanged(javax.swing.event.ChangeEvent evt) {
+                HH_EStateChanged(evt);
+            }
+        });
+        jPanel3.add(HH_E, new org.netbeans.lib.awtextra.AbsoluteConstraints(410, 150, 70, -1));
+
+        jLabel8.setFont(new java.awt.Font("Tahoma", 1, 12)); // NOI18N
+        jLabel8.setText("HH");
+        jPanel3.add(jLabel8, new org.netbeans.lib.awtextra.AbsoluteConstraints(390, 150, -1, 20));
+
+        MM_E.setFont(new java.awt.Font("Tahoma", 1, 12)); // NOI18N
+        MM_E.setModel(new javax.swing.SpinnerNumberModel(0, 0, 59, 1));
+        jPanel3.add(MM_E, new org.netbeans.lib.awtextra.AbsoluteConstraints(510, 150, 60, -1));
+
+        jLabel10.setFont(new java.awt.Font("Tahoma", 1, 12)); // NOI18N
+        jLabel10.setText("MM");
+        jPanel3.add(jLabel10, new org.netbeans.lib.awtextra.AbsoluteConstraints(490, 150, -1, 20));
+
+        HH.setFont(new java.awt.Font("Tahoma", 1, 12)); // NOI18N
+        HH.setModel(new javax.swing.SpinnerNumberModel(7, 0, 24, 1));
+        jPanel3.add(HH, new org.netbeans.lib.awtextra.AbsoluteConstraints(410, 110, 70, -1));
+
+        jLabel11.setFont(new java.awt.Font("Tahoma", 1, 12)); // NOI18N
+        jLabel11.setText("HH");
+        jPanel3.add(jLabel11, new org.netbeans.lib.awtextra.AbsoluteConstraints(390, 110, -1, 20));
+
+        MM.setFont(new java.awt.Font("Tahoma", 1, 12)); // NOI18N
+        MM.setModel(new javax.swing.SpinnerNumberModel(0, 0, 59, 1));
+        jPanel3.add(MM, new org.netbeans.lib.awtextra.AbsoluteConstraints(510, 110, 60, -1));
+
+        jLabel12.setFont(new java.awt.Font("Tahoma", 1, 12)); // NOI18N
+        jLabel12.setText("MM");
+        jPanel3.add(jLabel12, new org.netbeans.lib.awtextra.AbsoluteConstraints(490, 110, -1, 20));
+
+        TT.setFont(new java.awt.Font("Tahoma", 1, 12)); // NOI18N
+        TT.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "PM", "AM" }));
+        jPanel3.add(TT, new org.netbeans.lib.awtextra.AbsoluteConstraints(580, 110, -1, -1));
+
+        jLabel13.setFont(new java.awt.Font("Tahoma", 1, 12)); // NOI18N
+        jLabel13.setText("Costo:");
+        jPanel3.add(jLabel13, new org.netbeans.lib.awtextra.AbsoluteConstraints(600, 150, 50, 20));
+
+        txt_costo_adicional.setFormatterFactory(new javax.swing.text.DefaultFormatterFactory(new javax.swing.text.NumberFormatter(new java.text.DecimalFormat("#,###.00"))));
+        txt_costo_adicional.addKeyListener(new java.awt.event.KeyAdapter() {
+            public void keyTyped(java.awt.event.KeyEvent evt) {
+                txt_costo_adicionalKeyTyped(evt);
+            }
+        });
+        jPanel3.add(txt_costo_adicional, new org.netbeans.lib.awtextra.AbsoluteConstraints(390, 220, 390, -1));
+
+        txt_costo_primario.setFormatterFactory(new javax.swing.text.DefaultFormatterFactory(new javax.swing.text.NumberFormatter(new java.text.DecimalFormat("#,###.00"))));
+        txt_costo_primario.addKeyListener(new java.awt.event.KeyAdapter() {
+            public void keyTyped(java.awt.event.KeyEvent evt) {
+                txt_costo_primarioKeyTyped(evt);
+            }
+        });
+        jPanel3.add(txt_costo_primario, new org.netbeans.lib.awtextra.AbsoluteConstraints(650, 150, 120, -1));
+
+        btn_guardar.setText("Guardar");
+        btn_guardar.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btn_guardarActionPerformed(evt);
+            }
+        });
+
+        javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(jPanel2);
+        jPanel2.setLayout(jPanel2Layout);
+        jPanel2Layout.setHorizontalGroup(
+            jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel2Layout.createSequentialGroup()
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addComponent(btn_guardar, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(349, 349, 349))
+            .addGroup(jPanel2Layout.createSequentialGroup()
+                .addGap(25, 25, 25)
+                .addComponent(jPanel3, javax.swing.GroupLayout.DEFAULT_SIZE, 788, Short.MAX_VALUE)
+                .addContainerGap())
+        );
+        jPanel2Layout.setVerticalGroup(
+            jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel2Layout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(jPanel3, javax.swing.GroupLayout.DEFAULT_SIZE, 273, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(btn_guardar, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(21, 21, 21))
+        );
+
+        javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
+        jPanel1.setLayout(jPanel1Layout);
+        jPanel1Layout.setHorizontalGroup(
+            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addComponent(labelTask1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(jPanel2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addContainerGap())
+        );
+        jPanel1Layout.setVerticalGroup(
+            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel1Layout.createSequentialGroup()
+                .addComponent(labelTask1, javax.swing.GroupLayout.PREFERRED_SIZE, 79, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jPanel2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+        );
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 400, Short.MAX_VALUE)
+            .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 300, Short.MAX_VALUE)
+            .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
         );
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
+
+    private void btn_guardarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btn_guardarActionPerformed
+        /*if(validad())
+        if(guardar()){
+            JOptionPane.showMessageDialog(null, "Registro Guardado Exitosamente","Exito",JOptionPane.INFORMATION_MESSAGE);
+            limpiar();
+            cargarTablaDestinos();
+            txt_nombre.requestFocus();
+        }else{
+            JOptionPane.showMessageDialog(null, "Ocurrio un Error en el Guardado","ERROR", JOptionPane.ERROR_MESSAGE);
+        }*/
+        guardarrelacion();
+    }//GEN-LAST:event_btn_guardarActionPerformed
+
+    private void txt_costo_adicionalKeyTyped(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_txt_costo_adicionalKeyTyped
+        /*if(evt.getKeyChar()==KeyEvent.VK_ENTER){
+            if(validad()) {
+                boolean tipo=false;
+                if(cb_tipo.getSelectedItem().toString().equals("Externo")){
+                    tipo=true;
+                }
+                if(guardar(tipo)){
+                    JOptionPane.showMessageDialog(null, "Registro Guardado Exitosamente","Exito",JOptionPane.INFORMATION_MESSAGE);
+                    limpiar();
+                    cargarTablaDestinos();
+                    txt_destino.requestFocus();
+                    entrada();
+                }else{
+                    JOptionPane.showMessageDialog(null, "Ocurrio un Error en el Guardado","ERROR", JOptionPane.ERROR_MESSAGE);
+                }
+            }
+        }*/
+    }//GEN-LAST:event_txt_costo_adicionalKeyTyped
+
+    private void txt_costo_primarioKeyTyped(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_txt_costo_primarioKeyTyped
+       /* if(evt.getKeyChar()==KeyEvent.VK_ENTER){
+            if(validad()) {
+                boolean tipo=false;
+                if(cb_tipo.getSelectedItem().toString().equals("Externo")){
+                    tipo=true;
+                }
+                if(guardar(tipo)){
+                    JOptionPane.showMessageDialog(null, "Registro Guardado Exitosamente","Exito",JOptionPane.INFORMATION_MESSAGE);
+                    limpiar();
+                    cargarTablaDestinos();
+                    txt_destino.requestFocus();
+                    entrada();
+                }else{
+                    JOptionPane.showMessageDialog(null, "Ocurrio un Error en el Guardado","ERROR", JOptionPane.ERROR_MESSAGE);
+                }
+            }
+        }*/
+    }//GEN-LAST:event_txt_costo_primarioKeyTyped
+
+    private void HH_EStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_HH_EStateChanged
+        hora=(int) HH_E.getValue();
+        hora=hora*60;
+        JOptionPane.showMessageDialog(null,hora);
+    }//GEN-LAST:event_HH_EStateChanged
 
     /**
      * @param args the command line arguments
@@ -80,5 +449,34 @@ public class ControldeRutas extends javax.swing.JFrame {
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JSpinner HH;
+    private javax.swing.JSpinner HH_E;
+    private javax.swing.JSpinner MM;
+    private javax.swing.JSpinner MM_E;
+    private javax.swing.JComboBox<String> TT;
+    private org.edisoncor.gui.button.ButtonAction btn_guardar;
+    private javax.swing.JComboBox<String> cb_clientes;
+    private javax.swing.JComboBox<String> cb_destinos;
+    private javax.swing.JLabel jLabel1;
+    private javax.swing.JLabel jLabel10;
+    private javax.swing.JLabel jLabel11;
+    private javax.swing.JLabel jLabel12;
+    private javax.swing.JLabel jLabel13;
+    private javax.swing.JLabel jLabel2;
+    private javax.swing.JLabel jLabel3;
+    private javax.swing.JLabel jLabel4;
+    private javax.swing.JLabel jLabel5;
+    private javax.swing.JLabel jLabel6;
+    private javax.swing.JLabel jLabel7;
+    private javax.swing.JLabel jLabel8;
+    private javax.swing.JLabel jLabel9;
+    private javax.swing.JPanel jPanel1;
+    private javax.swing.JPanel jPanel2;
+    private javax.swing.JPanel jPanel3;
+    private org.edisoncor.gui.label.LabelTask labelTask1;
+    private javax.swing.JLabel lb_costo;
+    private javax.swing.JFormattedTextField txt_costo_adicional;
+    private javax.swing.JFormattedTextField txt_costo_primario;
+    private com.toedter.calendar.JDateChooser txt_fecha;
     // End of variables declaration//GEN-END:variables
 }
