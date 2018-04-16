@@ -16,7 +16,6 @@ import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.text.DecimalFormat;
-import java.text.NumberFormat;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.ImageIcon;
@@ -25,7 +24,6 @@ import javax.swing.JOptionPane;
 import javax.swing.JPopupMenu;
 import javax.swing.JTable;
 import javax.swing.event.TableModelEvent;
-import javax.swing.event.TableModelListener;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableModel;
 
@@ -44,18 +42,41 @@ public class Transporte extends javax.swing.JFrame {
     public Transporte() {
         initComponents();
         modeloruta=(DefaultTableModel)tabla_ruta.getModel();
-        cargarTablaDestinos ();
          poputTable();
          total1=0.0;
         txt_precio.setFormatterFactory(new javax.swing.text.DefaultFormatterFactory(new javax.swing.text.NumberFormatter(totalFormat)));
         anadeListenerAlModelo(tabla_ruta);
         this.setDefaultCloseOperation(DISPOSE_ON_CLOSE);
        entrada();
+       cargarempresas();
+       if( cb_empresa.getItemCount() > 0){
+          String[] arrayempresa = cb_empresa.getSelectedItem().toString().split("-");
+            cargarTablaDestinos (arrayempresa[0]);
+           }
     }
     
     private void entrada(){
          txt_origen.setText("Omega C.A");
         txt_origen.setEnabled(false);
+    }
+    
+    private void cargarempresas(){
+        ConexionBD con = new ConexionBD();
+        try {
+            Connection conexion = con.obtConexion();
+            Statement st = conexion.createStatement();
+            String sql = "SELECT concat(id,'-',nombre) as nombre FROM p.empresa";
+            ResultSet rs = st.executeQuery(sql);
+            cb_empresa.removeAllItems();
+            while(rs.next()){
+                cb_empresa.addItem(rs.getString("nombre"));
+            }
+            rs.close();
+            st.close();
+            conexion.close();
+        } catch (SQLException ex) {
+            Logger.getLogger(Transporte.class.getName()).log(Level.SEVERE, null, ex);
+        }
     }
     
     
@@ -160,7 +181,11 @@ public class Transporte extends javax.swing.JFrame {
         });
         JMenuItem menuItem2=new JMenuItem("Actualizar",new ImageIcon(getClass().getResource("/Icono/refresh_256_opt.png")));
       menuItem2.addActionListener((ActionEvent ae) -> {
-          cargarTablaDestinos ();
+           if( cb_empresa.getItemCount() > 0){
+          String[] arrayempresa = cb_empresa.getSelectedItem().toString().split("-");
+            cargarTablaDestinos (arrayempresa[0]);
+           }
+          cargarempresas();
         });
         popupMenu.add(menuItem1);
         popupMenu.add(menuItem2);
@@ -174,11 +199,20 @@ public class Transporte extends javax.swing.JFrame {
             Connection conexion=con.obtConexion();
             Statement st=conexion.createStatement();
             String Sql;
-            
+            String[] arrayempresa = cb_empresa.getSelectedItem().toString().split("-");
             if (!tipo){
-            Sql="insert into p.ruta (destino,precio,tipo) values ('"+txt_destino.getText()+"','"+txt_precio.getText()+"','"+cb_tipo.getSelectedItem().toString()+"')";
+            Sql="insert into p.ruta (destino,precio,tipo,empresa) values ("
+                    + "'"+txt_destino.getText()+"',"
+                    + "'"+txt_precio.getText()+"',"
+                    + "'"+cb_tipo.getSelectedItem().toString()+"',"
+                    + "'"+arrayempresa[0]+"')";
             }else{
-             Sql="insert into p.ruta (destino,precio,origen,tipo) values ('"+txt_destino.getText()+"','"+txt_precio.getText()+"','"+txt_origen.getText()+"','"+cb_tipo.getSelectedItem().toString()+"')";
+             Sql="insert into p.ruta (destino,precio,origen,tipo,empresa) values ("
+                     + "'"+txt_destino.getText()+"',"
+                     + "'"+txt_precio.getText()+"',"
+                     + "'"+txt_origen.getText()+"',"
+                     + "'"+cb_tipo.getSelectedItem().toString()+"',"
+                     + "'"+arrayempresa[0]+"')";
             }
             st.executeUpdate(Sql);
             st.close();
@@ -197,7 +231,7 @@ public class Transporte extends javax.swing.JFrame {
     }   
     
     
-    private void cargarTablaDestinos (){
+    private void cargarTablaDestinos (String empresa){
      String sql;
      ConexionBD con =new ConexionBD();
      reiniciarJTable(tabla_ruta);
@@ -205,7 +239,7 @@ public class Transporte extends javax.swing.JFrame {
      Connection conexion;
         try {
             conexion = con.obtConexion();
-            sql= "select id,origen,destino,precio,tipo from p.ruta";
+            sql= "select id,origen,destino,precio,tipo from p.ruta where empresa = '"+empresa+"'";
             PreparedStatement pstm = conexion.prepareCall(sql);
             ResultSet rset = pstm.executeQuery();
             ResultSetMetaData rsmd=rset.getMetaData();
@@ -274,6 +308,8 @@ public class Transporte extends javax.swing.JFrame {
         cb_tipo = new javax.swing.JComboBox<>();
         jLabel4 = new javax.swing.JLabel();
         buttonTransluceIcon1 = new org.edisoncor.gui.button.ButtonTransluceIcon();
+        jLabel5 = new javax.swing.JLabel();
+        cb_empresa = new javax.swing.JComboBox<>();
         jPanel4 = new javax.swing.JPanel();
         jScrollPane2 = new javax.swing.JScrollPane();
         tabla_ruta = new javax.swing.JTable();
@@ -313,22 +349,22 @@ public class Transporte extends javax.swing.JFrame {
                 btn_guardarActionPerformed(evt);
             }
         });
-        jPanel2.add(btn_guardar, new org.netbeans.lib.awtextra.AbsoluteConstraints(308, 119, -1, -1));
+        jPanel2.add(btn_guardar, new org.netbeans.lib.awtextra.AbsoluteConstraints(310, 150, -1, -1));
 
         jLabel1.setFont(new java.awt.Font("Tahoma", 1, 12)); // NOI18N
-        jLabel1.setText("Origen:");
-        jPanel2.add(jLabel1, new org.netbeans.lib.awtextra.AbsoluteConstraints(65, 52, -1, -1));
+        jLabel1.setText("Empresa:");
+        jPanel2.add(jLabel1, new org.netbeans.lib.awtextra.AbsoluteConstraints(60, 40, -1, -1));
 
         jLabel2.setFont(new java.awt.Font("Tahoma", 1, 12)); // NOI18N
         jLabel2.setText("Precio:");
-        jPanel2.add(jLabel2, new org.netbeans.lib.awtextra.AbsoluteConstraints(65, 90, 51, -1));
+        jPanel2.add(jLabel2, new org.netbeans.lib.awtextra.AbsoluteConstraints(70, 120, 51, -1));
 
         txt_origen.addKeyListener(new java.awt.event.KeyAdapter() {
             public void keyTyped(java.awt.event.KeyEvent evt) {
                 txt_origenKeyTyped(evt);
             }
         });
-        jPanel2.add(txt_origen, new org.netbeans.lib.awtextra.AbsoluteConstraints(120, 50, 177, -1));
+        jPanel2.add(txt_origen, new org.netbeans.lib.awtextra.AbsoluteConstraints(120, 80, 177, -1));
 
         txt_precio.setFormatterFactory(new javax.swing.text.DefaultFormatterFactory(new javax.swing.text.NumberFormatter(new java.text.DecimalFormat("#,###.00"))));
         txt_precio.addKeyListener(new java.awt.event.KeyAdapter() {
@@ -336,19 +372,19 @@ public class Transporte extends javax.swing.JFrame {
                 txt_precioKeyTyped(evt);
             }
         });
-        jPanel2.add(txt_precio, new org.netbeans.lib.awtextra.AbsoluteConstraints(120, 90, 177, -1));
+        jPanel2.add(txt_precio, new org.netbeans.lib.awtextra.AbsoluteConstraints(120, 120, 177, -1));
 
         jLabel3.setFont(new java.awt.Font("Tahoma", 1, 12)); // NOI18N
         jLabel3.setText("Destino: ");
-        jPanel2.add(jLabel3, new org.netbeans.lib.awtextra.AbsoluteConstraints(394, 52, -1, -1));
-        jPanel2.add(txt_destino, new org.netbeans.lib.awtextra.AbsoluteConstraints(453, 50, 189, -1));
+        jPanel2.add(jLabel3, new org.netbeans.lib.awtextra.AbsoluteConstraints(390, 80, -1, -1));
+        jPanel2.add(txt_destino, new org.netbeans.lib.awtextra.AbsoluteConstraints(450, 80, 189, -1));
 
         cb_tipo.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Regular", "Externo" }));
-        jPanel2.add(cb_tipo, new org.netbeans.lib.awtextra.AbsoluteConstraints(453, 88, 189, -1));
+        jPanel2.add(cb_tipo, new org.netbeans.lib.awtextra.AbsoluteConstraints(450, 110, 189, -1));
 
         jLabel4.setFont(new java.awt.Font("Tahoma", 1, 12)); // NOI18N
         jLabel4.setText("Tipo:");
-        jPanel2.add(jLabel4, new org.netbeans.lib.awtextra.AbsoluteConstraints(385, 90, -1, -1));
+        jPanel2.add(jLabel4, new org.netbeans.lib.awtextra.AbsoluteConstraints(390, 120, -1, -1));
 
         buttonTransluceIcon1.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Icono/Editar3.png"))); // NOI18N
         buttonTransluceIcon1.setText("Cambiar");
@@ -357,7 +393,19 @@ public class Transporte extends javax.swing.JFrame {
                 buttonTransluceIcon1ActionPerformed(evt);
             }
         });
-        jPanel2.add(buttonTransluceIcon1, new org.netbeans.lib.awtextra.AbsoluteConstraints(300, 30, 80, 60));
+        jPanel2.add(buttonTransluceIcon1, new org.netbeans.lib.awtextra.AbsoluteConstraints(300, 70, 80, 60));
+
+        jLabel5.setFont(new java.awt.Font("Tahoma", 1, 12)); // NOI18N
+        jLabel5.setText("Origen:");
+        jPanel2.add(jLabel5, new org.netbeans.lib.awtextra.AbsoluteConstraints(70, 80, -1, -1));
+
+        cb_empresa.setFont(new java.awt.Font("Tahoma", 1, 12)); // NOI18N
+        cb_empresa.addItemListener(new java.awt.event.ItemListener() {
+            public void itemStateChanged(java.awt.event.ItemEvent evt) {
+                cb_empresaItemStateChanged(evt);
+            }
+        });
+        jPanel2.add(cb_empresa, new org.netbeans.lib.awtextra.AbsoluteConstraints(120, 40, 270, -1));
 
         jPanel4.setBackground(new java.awt.Color(255, 255, 255));
 
@@ -393,15 +441,15 @@ public class Transporte extends javax.swing.JFrame {
         jPanel4.setLayout(jPanel4Layout);
         jPanel4Layout.setHorizontalGroup(
             jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel4Layout.createSequentialGroup()
-                .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 746, Short.MAX_VALUE)
+            .addGroup(jPanel4Layout.createSequentialGroup()
+                .addComponent(jScrollPane2)
                 .addContainerGap())
         );
         jPanel4Layout.setVerticalGroup(
             jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel4Layout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 121, Short.MAX_VALUE)
+                .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 138, Short.MAX_VALUE)
                 .addContainerGap())
         );
 
@@ -412,9 +460,9 @@ public class Transporte extends javax.swing.JFrame {
             .addComponent(labelTask1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
             .addGroup(jPanel3Layout.createSequentialGroup()
                 .addContainerGap()
-                .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jPanel4, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jPanel2, javax.swing.GroupLayout.PREFERRED_SIZE, 751, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                    .addComponent(jPanel4, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(jPanel2, javax.swing.GroupLayout.DEFAULT_SIZE, 756, Short.MAX_VALUE))
                 .addContainerGap(24, Short.MAX_VALUE))
         );
         jPanel3Layout.setVerticalGroup(
@@ -422,7 +470,7 @@ public class Transporte extends javax.swing.JFrame {
             .addGroup(jPanel3Layout.createSequentialGroup()
                 .addComponent(labelTask1, javax.swing.GroupLayout.PREFERRED_SIZE, 79, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jPanel2, javax.swing.GroupLayout.PREFERRED_SIZE, 167, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(jPanel2, javax.swing.GroupLayout.PREFERRED_SIZE, 204, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jPanel4, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
@@ -438,7 +486,7 @@ public class Transporte extends javax.swing.JFrame {
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel1Layout.createSequentialGroup()
                 .addComponent(jPanel3, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(0, 30, Short.MAX_VALUE))
+                .addGap(0, 0, Short.MAX_VALUE))
         );
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
@@ -464,7 +512,10 @@ public class Transporte extends javax.swing.JFrame {
             if(guardar(tipo)){
             JOptionPane.showMessageDialog(null, "Registro Guardado Exitosamente","Exito",JOptionPane.INFORMATION_MESSAGE);
             limpiar();
-            cargarTablaDestinos();
+            if( cb_empresa.getItemCount() > 0){
+            String[] arrayempresa = cb_empresa.getSelectedItem().toString().split("-");
+            cargarTablaDestinos (arrayempresa[0]);
+            };
             txt_destino.requestFocus();
             entrada();
             }else{
@@ -491,7 +542,10 @@ public class Transporte extends javax.swing.JFrame {
             if(guardar(tipo)){
             JOptionPane.showMessageDialog(null, "Registro Guardado Exitosamente","Exito",JOptionPane.INFORMATION_MESSAGE);
             limpiar();
-            cargarTablaDestinos();
+            if( cb_empresa.getItemCount() > 0){
+                String[] arrayempresa = cb_empresa.getSelectedItem().toString().split("-");
+                cargarTablaDestinos (arrayempresa[0]);
+             }
             txt_destino.requestFocus();
             entrada();
             }else{
@@ -504,6 +558,13 @@ public class Transporte extends javax.swing.JFrame {
     private void buttonTransluceIcon1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_buttonTransluceIcon1ActionPerformed
      desbloquear();
     }//GEN-LAST:event_buttonTransluceIcon1ActionPerformed
+
+    private void cb_empresaItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_cb_empresaItemStateChanged
+         if( cb_empresa.getItemCount() > 0){
+                String[] arrayempresa = cb_empresa.getSelectedItem().toString().split("-");
+                cargarTablaDestinos (arrayempresa[0]);
+             }
+    }//GEN-LAST:event_cb_empresaItemStateChanged
 
     /**
      * @param args the command line arguments
@@ -543,11 +604,13 @@ public class Transporte extends javax.swing.JFrame {
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private org.edisoncor.gui.button.ButtonAction btn_guardar;
     private org.edisoncor.gui.button.ButtonTransluceIcon buttonTransluceIcon1;
+    private javax.swing.JComboBox<String> cb_empresa;
     private javax.swing.JComboBox<String> cb_tipo;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel4;
+    private javax.swing.JLabel jLabel5;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel2;
     private javax.swing.JPanel jPanel3;
