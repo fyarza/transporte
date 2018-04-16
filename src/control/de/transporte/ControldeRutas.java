@@ -93,7 +93,8 @@ public class ControldeRutas extends javax.swing.JFrame {
         try {
             conexion = con.obtConexion();
             Statement st = conexion.createStatement();
-            String sql = "Select concat(id,'-',origen,'-',destino) as nombre from p.ruta";
+            String sql = "Select concat(a.id,'-',a.origen,'-',a.destino,'-',b.rif) as nombre from p.ruta a left join p.empresa b on (a.empresa=b.id)";
+            //String sql = "Select concat(id,'-',origen,'-',destino) as nombre from p.ruta";
             ResultSet rs=st.executeQuery(sql);
             cb_destinos.removeAllItems();
             while(rs.next()){
