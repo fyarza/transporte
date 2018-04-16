@@ -8,7 +8,6 @@ package control.de.transporte;
 import Clases.ConexionBD;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.KeyEvent;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -30,7 +29,7 @@ import javax.swing.table.TableModel;
  *
  * @author Federico Yarza
  */
-public class Cliente extends javax.swing.JFrame {
+public final class Cliente extends javax.swing.JFrame {
 
     DefaultTableModel modelotablacliente;
     public Cliente() {
@@ -50,7 +49,7 @@ public class Cliente extends javax.swing.JFrame {
         try {
             conexion = con.obtConexion();
             Statement st = conexion.createStatement();
-            String sql = "Select concat(id,'-',origen,'-',destino) as nombre from p.ruta where tipo='Regular'";
+            String sql = "Select concat(a.id,'-',a.origen,'-',a.destino,'-',b.rif) as nombre from p.ruta a left join p.empresa b on (a.empresa=b.id) where a.tipo='Regular'";
             ResultSet rs=st.executeQuery(sql);
             cb_direcciones.removeAllItems();
             while(rs.next()){
@@ -315,20 +314,20 @@ public class Cliente extends javax.swing.JFrame {
 
         jLabel1.setFont(new java.awt.Font("Tahoma", 1, 12)); // NOI18N
         jLabel1.setText("Nombre:");
-        jPanel2.add(jLabel1, new org.netbeans.lib.awtextra.AbsoluteConstraints(110, 40, -1, -1));
+        jPanel2.add(jLabel1, new org.netbeans.lib.awtextra.AbsoluteConstraints(30, 40, -1, -1));
 
         jLabel2.setFont(new java.awt.Font("Tahoma", 1, 12)); // NOI18N
         jLabel2.setText("Direccion:");
-        jPanel2.add(jLabel2, new org.netbeans.lib.awtextra.AbsoluteConstraints(110, 70, 77, -1));
+        jPanel2.add(jLabel2, new org.netbeans.lib.awtextra.AbsoluteConstraints(30, 70, 77, -1));
 
-        jPanel2.add(cb_direcciones, new org.netbeans.lib.awtextra.AbsoluteConstraints(190, 70, 260, -1));
+        jPanel2.add(cb_direcciones, new org.netbeans.lib.awtextra.AbsoluteConstraints(100, 70, 350, -1));
 
         txt_nombre.addKeyListener(new java.awt.event.KeyAdapter() {
             public void keyTyped(java.awt.event.KeyEvent evt) {
                 txt_nombreKeyTyped(evt);
             }
         });
-        jPanel2.add(txt_nombre, new org.netbeans.lib.awtextra.AbsoluteConstraints(190, 40, 260, -1));
+        jPanel2.add(txt_nombre, new org.netbeans.lib.awtextra.AbsoluteConstraints(100, 40, 350, -1));
 
         javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
         jPanel1.setLayout(jPanel1Layout);
