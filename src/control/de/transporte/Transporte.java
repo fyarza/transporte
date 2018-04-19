@@ -506,9 +506,9 @@ public class Transporte extends javax.swing.JFrame {
     private void btn_guardarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btn_guardarActionPerformed
        if(validad()) {
            boolean tipo=false;
-           if(cb_tipo.getSelectedItem().toString().equals("Externo")){
+           
             tipo=true;   
-           }
+           
             if(guardar(tipo)){
             JOptionPane.showMessageDialog(null, "Registro Guardado Exitosamente","Exito",JOptionPane.INFORMATION_MESSAGE);
             limpiar();
