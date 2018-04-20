@@ -7,7 +7,9 @@ package control.de.transporte;
 
 import instancia.InstaciaCliente;
 import instancia.InstanciaControldeRuta;
+import instancia.InstanciaEmpresa;
 import instancia.InstanciaTransporte;
+import instancia.IntanciaReporte;
 import javax.swing.JFrame;
 
 /**
@@ -35,6 +37,8 @@ public class Principal extends javax.swing.JFrame {
 
         jcMousePanel1 = new jcMousePanel.jcMousePanel();
         jMenuBar1 = new javax.swing.JMenuBar();
+        jMenu5 = new javax.swing.JMenu();
+        jMenuItem5 = new javax.swing.JMenuItem();
         jMenu2 = new javax.swing.JMenu();
         jMenuItem1 = new javax.swing.JMenuItem();
         jMenu1 = new javax.swing.JMenu();
@@ -59,6 +63,19 @@ public class Principal extends javax.swing.JFrame {
             jcMousePanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGap(0, 279, Short.MAX_VALUE)
         );
+
+        jMenu5.setText("Empresa");
+
+        jMenuItem5.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Icono/empresa_opt.png"))); // NOI18N
+        jMenuItem5.setText("Gestionar");
+        jMenuItem5.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jMenuItem5ActionPerformed(evt);
+            }
+        });
+        jMenu5.add(jMenuItem5);
+
+        jMenuBar1.add(jMenu5);
 
         jMenu2.setText("Transporte");
 
@@ -113,6 +130,11 @@ public class Principal extends javax.swing.JFrame {
 
         jMenuItem4.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Icono/informe_opt.png"))); // NOI18N
         jMenuItem4.setText("Gestionar");
+        jMenuItem4.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jMenuItem4ActionPerformed(evt);
+            }
+        });
         jMenu4.add(jMenuItem4);
 
         jMenuBar1.add(jMenu4);
@@ -134,9 +156,14 @@ public class Principal extends javax.swing.JFrame {
     }// </editor-fold>//GEN-END:initComponents
 
     private void jMenuItem1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItem1ActionPerformed
-     JFrame valor= InstanciaTransporte.getInstance(jMenu1.getWidth(),jMenu1.getHeight());
-               valor.setLocationRelativeTo(null);
+     JFrame valor = InstanciaTransporte.getInstance(jMenu1.getWidth(),jMenu1.getHeight());
+                if(valor.getState()==JFrame.ICONIFIED){
+                valor.setExtendedState(JFrame.NORMAL);
                 valor.setVisible(true);
+              }else{
+                valor.setLocationRelativeTo(null);
+                valor.setVisible(true);
+              }
     }//GEN-LAST:event_jMenuItem1ActionPerformed
 
     private void jMenu1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenu1ActionPerformed
@@ -149,15 +176,48 @@ public class Principal extends javax.swing.JFrame {
 
     private void jMenuItem2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItem2ActionPerformed
          JFrame valor= InstaciaCliente.getInstance(jMenu1.getWidth(),jMenu1.getHeight());
-               valor.setLocationRelativeTo(null);
+              if(valor.getState()==JFrame.ICONIFIED){
+                valor.setExtendedState(JFrame.NORMAL);
                 valor.setVisible(true);
+              }else{
+                valor.setLocationRelativeTo(null);
+                valor.setVisible(true);
+              }
     }//GEN-LAST:event_jMenuItem2ActionPerformed
 
     private void jMenuItem3ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItem3ActionPerformed
         JFrame valor= InstanciaControldeRuta.getInstance(jMenu1.getWidth(),jMenu1.getHeight());
-               valor.setLocationRelativeTo(null);
+                if(valor.getState()==JFrame.ICONIFIED){
+                valor.setExtendedState(JFrame.NORMAL);
                 valor.setVisible(true);
+              }else{
+                valor.setLocationRelativeTo(null);
+                valor.setVisible(true);
+              }
     }//GEN-LAST:event_jMenuItem3ActionPerformed
+
+    private void jMenuItem5ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItem5ActionPerformed
+       JFrame valor= InstanciaEmpresa.getInstance(jMenu1.getWidth(),jMenu1.getHeight());
+               if(valor.getState()==JFrame.ICONIFIED){
+                valor.setExtendedState(JFrame.NORMAL);
+                valor.setVisible(true);
+              }else{
+                valor.setLocationRelativeTo(null);
+                valor.setVisible(true);
+              }
+    }//GEN-LAST:event_jMenuItem5ActionPerformed
+
+    private void jMenuItem4ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItem4ActionPerformed
+      JFrame valor= IntanciaReporte.getInstance(jMenu1.getWidth(),jMenu1.getHeight());
+              if(valor.getState()==JFrame.ICONIFIED){ // evaluo sin la pantalla esta minimizada
+                valor.setExtendedState(JFrame.NORMAL);
+                valor.setVisible(true);
+              }else{
+                valor.setLocationRelativeTo(null);
+                valor.setVisible(true);
+              }
+              
+    }//GEN-LAST:event_jMenuItem4ActionPerformed
 
     /**
      * @param args the command line arguments
@@ -199,11 +259,13 @@ public class Principal extends javax.swing.JFrame {
     private javax.swing.JMenu jMenu2;
     private javax.swing.JMenu jMenu3;
     private javax.swing.JMenu jMenu4;
+    private javax.swing.JMenu jMenu5;
     private javax.swing.JMenuBar jMenuBar1;
     private javax.swing.JMenuItem jMenuItem1;
     private javax.swing.JMenuItem jMenuItem2;
     private javax.swing.JMenuItem jMenuItem3;
     private javax.swing.JMenuItem jMenuItem4;
+    private javax.swing.JMenuItem jMenuItem5;
     private jcMousePanel.jcMousePanel jcMousePanel1;
     // End of variables declaration//GEN-END:variables
 }

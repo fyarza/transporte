@@ -6,37 +6,201 @@
 package control.de.transporte;
 
 import Clases.ConexionBD;
+import java.awt.Color;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.sql.Connection;
-import java.sql.Date;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.text.Format;
+import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.text.SimpleDateFormat;
-import java.util.Calendar;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.swing.JFormattedTextField;
+import javax.swing.ImageIcon;
+import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
+import javax.swing.JPopupMenu;
+import javax.swing.JTable;
+import javax.swing.event.TableModelEvent;
+import javax.swing.table.DefaultTableModel;
+import javax.swing.table.TableModel;
 
 
 public class ControldeRutas extends javax.swing.JFrame {
 
-  private double costo,costo_adicional;
+    private final double costo;
+    private double costo_adicional;
+     DefaultTableModel modelotablarealiza;
+      private NumberFormat totalFormat;
+       private double total;
   private int hora;
     public ControldeRutas() {
         initComponents();
+        modelotablarealiza=(DefaultTableModel) tabla_realiza.getModel();
          this.setDefaultCloseOperation(DISPOSE_ON_CLOSE);
          cargarclientes();
          cargardirecciones();
          costo=0.0;
          hora=0;
          costo_adicional=0.0;
+         total=0.0;
          entrada();
-        
+         cargarTablaRealiza ();
+         poputTable();  
+         formato();
+         
+    }
+    
+    private void calculototal(){
+        ConexionBD con = new ConexionBD();
+        try {
+            Connection conexion = con.obtConexion();
+            Statement st = conexion.createStatement();
+            String sql="select SUM(a.precio)+ SUM(b.costo_adicional)+ SUM(hora_espera) "
+                    + "as total from p.realiza b left join p.ruta a on (b.destino=a.id) where b.factura = 'No Facturado'";
+            
+            ResultSet rs = st.executeQuery(sql);
+            if(rs.next()){
+                total=rs.getDouble("total");
+            }
+            //JOptionPane.showMessageDialog(null, total);
+        } catch (SQLException ex) {
+            Logger.getLogger(ControldeRutas.class.getName()).log(Level.SEVERE, null, ex);
+        }
         
     }
+        
+    
+    private void formato(){
+        totalFormat= NumberFormat.getCurrencyInstance();
+        txt_totalpagar.setFormatterFactory(new javax.swing.text.DefaultFormatterFactory(new javax.swing.text.NumberFormatter(totalFormat)));
+        txt_totalpagar.setValue(total);
+        txt_totalpagar.setColumns(10);
+        txt_totalpagar.setEditable(false);
+        txt_totalpagar.setForeground(Color.red);
+ 
+    }
+    
+    
+    private void eliminarruta(){
+     int fsel = this.tabla_realiza.getSelectedRow();
+        if (fsel == -1)
+        {
+            JOptionPane.showMessageDialog(null, "Debe selecionar la Ruta a Eliminar", "Advertencia", 0);
+        }
+        else
+        {
+            
+            int resp = JOptionPane.showConfirmDialog(null, "Estas Seguro de Eliminar esta Ruta", "Eliminar", 0);
+            if (resp == 0)
+            {
+                ConexionBD con=new ConexionBD();
+                Connection conexion;
+                try {
+                    conexion = con.obtConexion();
+                    Statement st=conexion.createStatement();
+                    String sql="DELETE from p.realiza where id='"+tabla_realiza.getValueAt(tabla_realiza.getSelectedRow(), 0).toString()+"'";
+                    st.executeUpdate(sql);
+                    JOptionPane.showMessageDialog(null, "Eliminado Exitosamente","ELIMINADO", JOptionPane.INFORMATION_MESSAGE);
+                    this.modelotablarealiza = ((DefaultTableModel)this.tabla_realiza.getModel());
+                this.modelotablarealiza.removeRow(fsel);
+                st.close(); 
+                conexion.close();
+                 entrada();
+                } catch (SQLException ex) {
+                    Logger.getLogger(Transporte.class.getName()).log(Level.SEVERE, null, ex);
+                }
+            }
+        }
+    }
+    
+      private void poputTable(){
+        JPopupMenu popupMenu =new JPopupMenu();
+        JMenuItem menuItem1 = new JMenuItem("Eliminar",new ImageIcon(getClass().getResource("/Icono/Borrar3_opt.png")));
+        menuItem1.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent ae) {
+               eliminarruta();
+            }
+        });
+        JMenuItem menuItem2=new JMenuItem("Actualizar",new ImageIcon(getClass().getResource("/Icono/refresh_256_opt.png")));
+      menuItem2.addActionListener((ActionEvent ae) -> {
+          cargarTablaRealiza();
+        });
+       
+        popupMenu.add(menuItem1);
+        popupMenu.add(menuItem2);
+        tabla_realiza.setComponentPopupMenu(popupMenu);
+        
+    }
+    
+     
+    
+    
+    
+    private void limpiar(){
+        txt_costo_primario.setValue(0.0);
+        txt_costo_adicional.setValue(0.0);
+        txt_motivo.setText(null);
+        HH.setValue(7);
+        MM.setValue(0);
+        HH_E.setValue(0);
+        MM_E.setValue(0);
+    }
+    
+    
+    private static void reiniciarJTable(javax.swing.JTable Tabla){
+        DefaultTableModel modelo = (DefaultTableModel) Tabla.getModel();
+        while(modelo.getRowCount()>0)modelo.removeRow(0);
+    }   
+    
+    private void cargarTablaRealiza (){
+     String sql;
+     ConexionBD con =new ConexionBD();
+     reiniciarJTable(tabla_realiza);
+     modelotablarealiza.setRowCount(0);
+     Connection conexion;
+        try {
+            conexion = con.obtConexion();
+            /*sql= "select realiza.id,cliente.nombre,realiza.fecha,ruta.destino,realiza.hora_espera,realiza.costo_adicional,realiza.motivo,ruta.precio"
+                    + " from p.realiza realiza left join p.cliente cliente on(realiza.cliente = cliente.id)"
+                    + "left join p.ruta ruta on (realiza.destino = ruta.id) where realiza.factura = 'No Facturado' order by realiza.fecha DESC";
+            //JOptionPane.showMessageDialog(null, sql);*/
+            sql="select realiza.id,cliente.nombre,realiza.fecha,\n" +
+                "concat(ruta.origen,'-',ruta.destino) as destino,\n" +
+                "realiza.hora_espera,realiza.costo_adicional,\n" +
+                "realiza.motivo,ruta.precio \n" +
+                "from p.realiza realiza \n" +
+                "inner join p.ruta on (realiza.destino = ruta.id) \n" +
+                "inner join p.cliente cliente on (realiza.cliente = cliente.id)\n" +
+               "where realiza.factura = 'No Facturado' "+
+                     "order by realiza.id DESC";
+            PreparedStatement pstm = conexion.prepareCall(sql);
+            ResultSet rset = pstm.executeQuery();
+            ResultSetMetaData rsmd=rset.getMetaData();
+            int col= rsmd.getColumnCount();
+            while (rset.next())
+            {
+                String filas[]=new String[col];
+                for (int j=0;j<col;j++){
+                    filas[j]=rset.getString(j+1);
+         }
+        modelotablarealiza.addRow(filas);
+         tabla_realiza.setModel(modelotablarealiza);
+     }
+     rset.close();
+     conexion.close();   
+        } catch (SQLException ex) {
+            Logger.getLogger(Transporte.class.getName()).log(Level.SEVERE, null, ex);
+        }
+     
+ }
+    
+    
     
     private String obt_fecha(com.toedter.calendar.JDateChooser fecha){
         /*jfnac es de tipo JDateChooser
@@ -58,6 +222,8 @@ public class ControldeRutas extends javax.swing.JFrame {
     private void entrada(){
        txt_costo_primario.setValue(costo);
        txt_costo_adicional.setValue(costo_adicional);
+       calculototal();
+       txt_totalpagar.setValue(total);
     }
     
     
@@ -118,11 +284,11 @@ public class ControldeRutas extends javax.swing.JFrame {
           Statement st = conexion.createStatement();
           String[] arraydestino = cb_destinos.getSelectedItem().toString().split("-");
           String[] arraycliente = cb_clientes.getSelectedItem().toString().split("-");
-          String Sql="INSERT INTO p.realiza (fecha,hora,destino,cliente,costo_adicional,tiempo_espera,hora_espera)"
+          String Sql="INSERT INTO p.realiza (fecha,hora,destino,cliente,costo_adicional,tiempo_espera,hora_espera,motivo)"
                   + " values ('"+obt_fecha(txt_fecha)+"','"+HH.getValue()+":"+MM.getValue()+" "+TT.getSelectedItem().toString()+"',"
                   + "'"+arraydestino[0]+"','"+arraycliente[0]+"','"+txt_costo_adicional.getValue()+"','"+HH_E.getValue()+":"+MM_E.getValue()+"',"
-                  + "'"+txt_costo_primario.getValue()+"')";
-          JOptionPane.showMessageDialog(null, Sql);
+                  + "'"+txt_costo_primario.getValue()+"','"+txt_motivo.getText()+"')";
+          //JOptionPane.showMessageDialog(null, Sql);
           st.executeUpdate(Sql);
           JOptionPane.showMessageDialog(null, "Registro Guardado Exitosamente", "Guardado...", JOptionPane.INFORMATION_MESSAGE);
           st.close();
@@ -132,10 +298,6 @@ public class ControldeRutas extends javax.swing.JFrame {
       }
           
       }
-    
-    
-    
-
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always
@@ -174,6 +336,15 @@ public class ControldeRutas extends javax.swing.JFrame {
         txt_costo_adicional = new javax.swing.JFormattedTextField();
         txt_costo_primario = new javax.swing.JFormattedTextField();
         btn_guardar = new org.edisoncor.gui.button.ButtonAction();
+        jLabel14 = new javax.swing.JLabel();
+        jScrollPane2 = new javax.swing.JScrollPane();
+        txt_motivo = new javax.swing.JTextArea();
+        jPanel4 = new javax.swing.JPanel();
+        jScrollPane1 = new javax.swing.JScrollPane();
+        tabla_realiza = new javax.swing.JTable();
+        jLabel15 = new javax.swing.JLabel();
+        txt_totalpagar = new javax.swing.JFormattedTextField();
+        jLabel16 = new javax.swing.JLabel();
 
         jLabel1.setText("jLabel1");
 
@@ -229,8 +400,8 @@ public class ControldeRutas extends javax.swing.JFrame {
         jPanel3.add(lb_costo, new org.netbeans.lib.awtextra.AbsoluteConstraints(388, 180, 388, 21));
 
         jLabel6.setFont(new java.awt.Font("Tahoma", 1, 12)); // NOI18N
-        jLabel6.setText("Costo Adicional:");
-        jPanel3.add(jLabel6, new org.netbeans.lib.awtextra.AbsoluteConstraints(0, 216, 388, 21));
+        jLabel6.setText("Motivo:");
+        jPanel3.add(jLabel6, new org.netbeans.lib.awtextra.AbsoluteConstraints(0, 260, 250, 21));
 
         HH_E.setFont(new java.awt.Font("Tahoma", 1, 12)); // NOI18N
         HH_E.setModel(new javax.swing.SpinnerNumberModel(0, 0, 24, 1));
@@ -299,46 +470,119 @@ public class ControldeRutas extends javax.swing.JFrame {
                 btn_guardarActionPerformed(evt);
             }
         });
+        jPanel3.add(btn_guardar, new org.netbeans.lib.awtextra.AbsoluteConstraints(810, 290, -1, -1));
+
+        jLabel14.setFont(new java.awt.Font("Tahoma", 1, 12)); // NOI18N
+        jLabel14.setText("Costo Adicional:");
+        jPanel3.add(jLabel14, new org.netbeans.lib.awtextra.AbsoluteConstraints(0, 216, 388, 21));
+
+        txt_motivo.setColumns(20);
+        txt_motivo.setRows(5);
+        jScrollPane2.setViewportView(txt_motivo);
+
+        jPanel3.add(jScrollPane2, new org.netbeans.lib.awtextra.AbsoluteConstraints(390, 250, 390, 90));
+
+        tabla_realiza.setModel(new javax.swing.table.DefaultTableModel(
+            new Object [][] {
+
+            },
+            new String [] {
+                "id", "Cliente", "Fecha", "Destino", "H/Espera", "Costo A", "Motivo", "Precio"
+            }
+        ));
+        jScrollPane1.setViewportView(tabla_realiza);
+        if (tabla_realiza.getColumnModel().getColumnCount() > 0) {
+            tabla_realiza.getColumnModel().getColumn(0).setMinWidth(40);
+            tabla_realiza.getColumnModel().getColumn(0).setPreferredWidth(40);
+            tabla_realiza.getColumnModel().getColumn(0).setMaxWidth(40);
+            tabla_realiza.getColumnModel().getColumn(3).setMinWidth(200);
+            tabla_realiza.getColumnModel().getColumn(3).setPreferredWidth(200);
+            tabla_realiza.getColumnModel().getColumn(3).setMaxWidth(200);
+        }
+
+        javax.swing.GroupLayout jPanel4Layout = new javax.swing.GroupLayout(jPanel4);
+        jPanel4.setLayout(jPanel4Layout);
+        jPanel4Layout.setHorizontalGroup(
+            jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel4Layout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(jScrollPane1)
+                .addContainerGap())
+        );
+        jPanel4Layout.setVerticalGroup(
+            jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel4Layout.createSequentialGroup()
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 199, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap())
+        );
 
         javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(jPanel2);
         jPanel2.setLayout(jPanel2Layout);
         jPanel2Layout.setHorizontalGroup(
             jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel2Layout.createSequentialGroup()
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addComponent(btn_guardar, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(349, 349, 349))
             .addGroup(jPanel2Layout.createSequentialGroup()
-                .addGap(25, 25, 25)
-                .addComponent(jPanel3, javax.swing.GroupLayout.DEFAULT_SIZE, 788, Short.MAX_VALUE)
+                .addGap(28, 28, 28)
+                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jPanel3, javax.swing.GroupLayout.DEFAULT_SIZE, 942, Short.MAX_VALUE)
+                    .addComponent(jPanel4, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addContainerGap())
         );
         jPanel2Layout.setVerticalGroup(
             jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel2Layout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(jPanel3, javax.swing.GroupLayout.DEFAULT_SIZE, 273, Short.MAX_VALUE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(btn_guardar, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(21, 21, 21))
+                .addComponent(jPanel3, javax.swing.GroupLayout.DEFAULT_SIZE, 352, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jPanel4, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
         );
+
+        jLabel15.setFont(new java.awt.Font("Tahoma", 1, 12)); // NOI18N
+        jLabel15.setText("SALDO:");
+
+        txt_totalpagar.setBackground(new java.awt.Color(0, 0, 0));
+        txt_totalpagar.setForeground(java.awt.Color.red);
+        txt_totalpagar.setHorizontalAlignment(javax.swing.JTextField.RIGHT);
+        txt_totalpagar.setDisabledTextColor(new java.awt.Color(255, 0, 0));
+        txt_totalpagar.setFont(new java.awt.Font("Arial Black", 1, 14)); // NOI18N
+
+        jLabel16.setFont(new java.awt.Font("Tahoma", 1, 12)); // NOI18N
+        jLabel16.setText("BsF.");
 
         javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
         jPanel1.setLayout(jPanel1Layout);
         jPanel1Layout.setHorizontalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(labelTask1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(jPanel2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+            .addGroup(jPanel1Layout.createSequentialGroup()
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(jPanel1Layout.createSequentialGroup()
+                        .addComponent(labelTask1, javax.swing.GroupLayout.PREFERRED_SIZE, 211, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(jLabel15, javax.swing.GroupLayout.PREFERRED_SIZE, 53, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(txt_totalpagar, javax.swing.GroupLayout.PREFERRED_SIZE, 210, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(jLabel16)
+                        .addGap(30, 30, 30))
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
+                        .addContainerGap()
+                        .addComponent(jPanel2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
                 .addContainerGap())
         );
         jPanel1Layout.setVerticalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel1Layout.createSequentialGroup()
-                .addComponent(labelTask1, javax.swing.GroupLayout.PREFERRED_SIZE, 79, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addComponent(labelTask1, javax.swing.GroupLayout.PREFERRED_SIZE, 79, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jLabel15)
+                    .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                        .addGroup(jPanel1Layout.createSequentialGroup()
+                            .addGap(12, 12, 12)
+                            .addComponent(jLabel16))
+                        .addComponent(txt_totalpagar, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jPanel2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addComponent(jPanel2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addContainerGap())
         );
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
@@ -366,6 +610,9 @@ public class ControldeRutas extends javax.swing.JFrame {
             JOptionPane.showMessageDialog(null, "Ocurrio un Error en el Guardado","ERROR", JOptionPane.ERROR_MESSAGE);
         }*/
         guardarrelacion();
+        cargarTablaRealiza ();
+        limpiar();
+        entrada();
     }//GEN-LAST:event_btn_guardarActionPerformed
 
     private void txt_costo_adicionalKeyTyped(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_txt_costo_adicionalKeyTyped
@@ -463,6 +710,9 @@ public class ControldeRutas extends javax.swing.JFrame {
     private javax.swing.JLabel jLabel11;
     private javax.swing.JLabel jLabel12;
     private javax.swing.JLabel jLabel13;
+    private javax.swing.JLabel jLabel14;
+    private javax.swing.JLabel jLabel15;
+    private javax.swing.JLabel jLabel16;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel4;
@@ -474,10 +724,16 @@ public class ControldeRutas extends javax.swing.JFrame {
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel2;
     private javax.swing.JPanel jPanel3;
+    private javax.swing.JPanel jPanel4;
+    private javax.swing.JScrollPane jScrollPane1;
+    private javax.swing.JScrollPane jScrollPane2;
     private org.edisoncor.gui.label.LabelTask labelTask1;
     private javax.swing.JLabel lb_costo;
+    private javax.swing.JTable tabla_realiza;
     private javax.swing.JFormattedTextField txt_costo_adicional;
     private javax.swing.JFormattedTextField txt_costo_primario;
     private com.toedter.calendar.JDateChooser txt_fecha;
+    private javax.swing.JTextArea txt_motivo;
+    private javax.swing.JFormattedTextField txt_totalpagar;
     // End of variables declaration//GEN-END:variables
 }

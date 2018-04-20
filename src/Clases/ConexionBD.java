@@ -39,7 +39,7 @@ public class ConexionBD {
             Connection conn = DriverManager.getConnection(url, usuario, contrasena);
             if (conn != null)
                 //JOptionPane.showMessageDialog(null, "Conexión establecida con éxito!!", "Suceso", JOptionPane.INFORMATION_MESSAGE);
-               System.out.print("Conexion Establecida con Exito");
+               System.out.print("\nConexion Establecida con Exito");
             return conn;    
             
         } catch (ClassNotFoundException exc) {

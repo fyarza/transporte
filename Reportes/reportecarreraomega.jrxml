@@ -1,0 +1,350 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="reportecarreraomega" language="groovy" pageWidth="595" pageHeight="842" columnWidth="535" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20" uuid="aaf9c20d-3e71-4b4e-8317-30ef6da8e73d">
+	<property name="ireport.zoom" value="1.0"/>
+	<property name="ireport.x" value="0"/>
+	<property name="ireport.y" value="0"/>
+	<style name="Title" fontName="Arial" fontSize="26" isBold="true" pdfFontName="Helvetica-Bold"/>
+	<style name="SubTitle" forecolor="#666666" fontName="Arial" fontSize="18"/>
+	<style name="Column header" forecolor="#666666" fontName="Arial" fontSize="12" isBold="true"/>
+	<style name="Detail" fontName="Arial" fontSize="12"/>
+	<parameter name="empresa" class="java.lang.Integer"/>
+	<parameter name="fecha_inicio" class="java.util.Date">
+		<defaultValueExpression><![CDATA[]]></defaultValueExpression>
+	</parameter>
+	<parameter name="fecha_final" class="java.util.Date">
+		<defaultValueExpression><![CDATA[]]></defaultValueExpression>
+	</parameter>
+	<queryString>
+		<![CDATA[select to_char(realiza.fecha,'DD/MM/YYYY') as fecha,cliente.nombre as cliente,concat(ruta.origen,' - ',ruta.destino) as destino,
+realiza.hora_espera as costo_espera,realiza.costo_adicional as costo_adicional,realiza.motivo as motivo,ruta.precio as precio,empresa.rif as rif , empresa.nombre as nombre_empresa
+from p.realiza realiza
+inner join p.ruta on (realiza.destino = ruta.id)
+inner join p.cliente cliente on (realiza.cliente = cliente.id)
+inner join p.empresa empresa on (ruta.empresa=empresa.id)
+where realiza.fecha BETWEEN $P{fecha_inicio} and $P{fecha_final} and realiza.factura = 'No Facturado' and ruta.empresa = $P{empresa}
+order by realiza.fecha ASC ;]]>
+	</queryString>
+	<field name="fecha" class="java.lang.String"/>
+	<field name="cliente" class="java.lang.String"/>
+	<field name="destino" class="java.lang.String"/>
+	<field name="costo_espera" class="java.math.BigDecimal"/>
+	<field name="costo_adicional" class="java.math.BigDecimal"/>
+	<field name="motivo" class="java.lang.String"/>
+	<field name="precio" class="java.math.BigDecimal"/>
+	<field name="rif" class="java.lang.String"/>
+	<field name="nombre_empresa" class="java.lang.String"/>
+	<variable name="precio_1" class="java.math.BigDecimal" resetType="Column" calculation="Sum">
+		<variableExpression><![CDATA[$F{precio}]]></variableExpression>
+	</variable>
+	<variable name="costo_adicional_1" class="java.math.BigDecimal" resetType="Group" resetGroup="rif" calculation="Sum">
+		<variableExpression><![CDATA[$F{costo_adicional}]]></variableExpression>
+	</variable>
+	<variable name="costo_espera_1" class="java.math.BigDecimal" resetType="Group" resetGroup="rif" calculation="Sum">
+		<variableExpression><![CDATA[$F{costo_espera}]]></variableExpression>
+	</variable>
+	<variable name="precio_2" class="java.lang.Integer" resetType="Group" resetGroup="rif" calculation="Count">
+		<variableExpression><![CDATA[$F{precio}]]></variableExpression>
+	</variable>
+	<variable name="precio_3" class="java.math.BigDecimal" resetType="Group" resetGroup="rif" calculation="Sum">
+		<variableExpression><![CDATA[$F{precio}]]></variableExpression>
+	</variable>
+	<variable name="sumatotal" class="java.lang.String"/>
+	<group name="rif">
+		<groupExpression><![CDATA[$F{rif}]]></groupExpression>
+		<groupHeader>
+			<band height="6"/>
+		</groupHeader>
+		<groupFooter>
+			<band height="167">
+				<textField pattern="#,###.00">
+					<reportElement x="423" y="25" width="131" height="20" uuid="ee482ef5-2221-4874-bae5-70db710ce6ef"/>
+					<textElement textAlignment="Right" verticalAlignment="Top">
+						<font fontName="Arial" size="12" isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$V{costo_adicional_1}]]></textFieldExpression>
+				</textField>
+				<textField pattern="#,###.00">
+					<reportElement x="423" y="45" width="130" height="20" uuid="7e4e62b6-3f1e-4280-b07a-a96085e64526"/>
+					<textElement textAlignment="Right" verticalAlignment="Top">
+						<font fontName="Arial" size="12" isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$V{costo_espera_1}]]></textFieldExpression>
+				</textField>
+				<staticText>
+					<reportElement x="276" y="65" width="169" height="20" uuid="c5babd07-c48a-492a-bd74-f96bc55f9288"/>
+					<textElement textAlignment="Right">
+						<font fontName="Arial" size="12" isBold="true"/>
+					</textElement>
+					<text><![CDATA[SubTotal Precio Ruta:]]></text>
+				</staticText>
+				<staticText>
+					<reportElement x="276" y="45" width="169" height="20" uuid="6b63e2f8-2512-4414-b4e7-1a875ab7e09b"/>
+					<textElement textAlignment="Right">
+						<font fontName="Arial" size="12" isBold="true"/>
+					</textElement>
+					<text><![CDATA[Sub Total Costo de Espera:]]></text>
+				</staticText>
+				<staticText>
+					<reportElement x="275" y="25" width="171" height="20" uuid="63bd5fc7-9c0f-4fc8-a76f-223e2a76a4b8"/>
+					<textElement textAlignment="Right">
+						<font fontName="Arial" size="12" isBold="true"/>
+					</textElement>
+					<text><![CDATA[Sub Total Costo Adicional:]]></text>
+				</staticText>
+				<textField pattern="#,###.00">
+					<reportElement x="423" y="65" width="130" height="20" uuid="460509ce-3f9c-4ad2-a6ee-63923270bb53"/>
+					<textElement textAlignment="Right" verticalAlignment="Top">
+						<font fontName="Arial" size="12" isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$V{precio_3}]]></textFieldExpression>
+				</textField>
+				<staticText>
+					<reportElement x="454" y="26" width="21" height="19" uuid="afa1c08c-3495-49a4-b913-5c70be8878d5"/>
+					<textElement>
+						<font fontName="Arial" size="12" isBold="true"/>
+					</textElement>
+					<text><![CDATA[Bs.]]></text>
+				</staticText>
+				<staticText>
+					<reportElement x="454" y="65" width="19" height="20" uuid="d22fa409-a9bf-45ab-a5e4-1943539b17fb"/>
+					<textElement>
+						<font fontName="Arial" size="12" isBold="true"/>
+					</textElement>
+					<text><![CDATA[Bs.]]></text>
+				</staticText>
+				<staticText>
+					<reportElement x="454" y="45" width="21" height="20" uuid="26257355-e922-4300-9e84-692ca448f760"/>
+					<textElement>
+						<font fontName="Arial" size="12" isBold="true"/>
+					</textElement>
+					<text><![CDATA[Bs.]]></text>
+				</staticText>
+				<textField pattern="#,###.00">
+					<reportElement x="423" y="86" width="130" height="20" uuid="26d13228-e618-43ff-862c-4d8319454c93"/>
+					<textElement textAlignment="Right" verticalAlignment="Top">
+						<font fontName="Arial" size="12" isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$V{costo_adicional_1}.doubleValue()+ $V{costo_espera_1}.doubleValue()+$V{precio_3}.doubleValue()]]></textFieldExpression>
+				</textField>
+				<staticText>
+					<reportElement x="455" y="87" width="19" height="20" uuid="1e1c0f41-c45c-4e5c-9259-a5fa5c12b038"/>
+					<textElement>
+						<font fontName="Arial" size="12" isBold="true"/>
+					</textElement>
+					<text><![CDATA[Bs.]]></text>
+				</staticText>
+				<staticText>
+					<reportElement x="276" y="88" width="169" height="20" uuid="085880c1-3728-4fec-accf-d39a79bd3f41"/>
+					<textElement textAlignment="Right">
+						<font fontName="Arial" size="12" isBold="true"/>
+					</textElement>
+					<text><![CDATA[Total:]]></text>
+				</staticText>
+				<staticText>
+					<reportElement x="3" y="26" width="261" height="82" uuid="61bb06a9-bc2f-45aa-9a1b-9a22ea834b1e"/>
+					<box topPadding="2" leftPadding="2" bottomPadding="2" rightPadding="2">
+						<pen lineWidth="1.0"/>
+						<topPen lineWidth="1.0"/>
+						<leftPen lineWidth="1.0"/>
+						<bottomPen lineWidth="1.0"/>
+						<rightPen lineWidth="1.0"/>
+					</box>
+					<textElement textAlignment="Center">
+						<font size="12" isBold="true"/>
+					</textElement>
+					<text><![CDATA[Realizar la Transferencia a Cuenta: Banco Mercantil
+Numero: 0105 0097 41 1097194876
+Nombre: Federico Yarza
+C.I.: 17.552.112
+]]></text>
+				</staticText>
+			</band>
+		</groupFooter>
+	</group>
+	<group name="fecha">
+		<groupExpression><![CDATA[$F{fecha}]]></groupExpression>
+		<groupHeader>
+			<band height="28">
+				<textField>
+					<reportElement style="SubTitle" x="1" y="5" width="460" height="20" forecolor="#339900" uuid="74bec688-7ac6-4fae-bc25-bac082fe24b9"/>
+					<textElement>
+						<font size="16" isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{fecha}]]></textFieldExpression>
+				</textField>
+			</band>
+		</groupHeader>
+	</group>
+	<background>
+		<band splitType="Stretch"/>
+	</background>
+	<title>
+		<band height="100" splitType="Stretch">
+			<textField>
+				<reportElement x="1" y="26" width="263" height="24" uuid="4e9af493-8743-4d40-9ccf-c2a781d1d68f"/>
+				<textElement>
+					<font fontName="Arial" size="16" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{nombre_empresa}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement style="SubTitle" x="1" y="50" width="125" height="24" forecolor="#666666" uuid="a900de9b-eaf2-4c26-9e39-875e9272c53a"/>
+				<textElement>
+					<font isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{rif}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="1" y="76" width="262" height="20" forecolor="#666666" uuid="b286109e-395d-42c5-9958-335aae0f9dbf"/>
+				<textElement>
+					<font fontName="Arial" size="12" isBold="true"/>
+				</textElement>
+				<text><![CDATA[DETALLADO DE TRASLADOS]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="306" y="0" width="247" height="98" uuid="a12948d1-0bbc-44ec-8bfd-e9d881b707bd"/>
+				<box topPadding="2" leftPadding="2" bottomPadding="2" rightPadding="2">
+					<pen lineWidth="0.5"/>
+					<topPen lineWidth="0.5"/>
+					<leftPen lineWidth="0.5"/>
+					<bottomPen lineWidth="0.5"/>
+					<rightPen lineWidth="0.5"/>
+				</box>
+				<textElement textAlignment="Center"/>
+				<text><![CDATA[FEDERICO ANTONIO YARZA CASTILLO
+Rif: V - 17552112 – 3
+Dirección: Av. Miranda, Qta. Jufelian Nro. 282.  Urb El Socorro Sector 1.
+Valencia  - Edo. Carabobo. Zona Postal 2001
+Tlefs.: 0412-4067967 / 0412- 6695183
+E-Mail: federicoyarza295@gmail.com
+
+]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="3" y="6" width="100" height="20" forecolor="#666666" uuid="ca70a59b-808e-4dfd-a93d-46122fc3318c"/>
+				<textElement>
+					<font fontName="Arial" size="12" isBold="true"/>
+				</textElement>
+				<text><![CDATA[CLIENTE]]></text>
+			</staticText>
+		</band>
+	</title>
+	<pageHeader>
+		<band splitType="Stretch"/>
+	</pageHeader>
+	<columnHeader>
+		<band height="36" splitType="Stretch">
+			<line>
+				<reportElement positionType="FixRelativeToBottom" x="0" y="35" width="555" height="1" uuid="db968bf4-c50a-4157-9487-f5506511d8f2"/>
+				<graphicElement>
+					<pen lineWidth="0.5" lineColor="#999999"/>
+				</graphicElement>
+			</line>
+			<staticText>
+				<reportElement style="Column header" x="0" y="19" width="79" height="15" forecolor="#000000" uuid="f77d0a7b-eca5-4132-853f-869defb36577"/>
+				<textElement textAlignment="Center">
+					<font isBold="true"/>
+				</textElement>
+				<text><![CDATA[Cliente]]></text>
+			</staticText>
+			<staticText>
+				<reportElement style="Column header" x="80" y="19" width="183" height="15" forecolor="#000000" uuid="0a929dcb-b846-45ad-8988-ee4ade4e31cc"/>
+				<textElement textAlignment="Center">
+					<font isBold="true"/>
+				</textElement>
+				<text><![CDATA[Origen - Destino]]></text>
+			</staticText>
+			<staticText>
+				<reportElement style="Column header" x="264" y="19" width="105" height="15" forecolor="#000000" uuid="33cac780-740d-4809-b1a9-a54b7bce9f6e"/>
+				<textElement textAlignment="Center">
+					<font isBold="true"/>
+				</textElement>
+				<text><![CDATA[Costo de Espera]]></text>
+			</staticText>
+			<staticText>
+				<reportElement style="Column header" x="368" y="19" width="93" height="15" forecolor="#000000" uuid="c5d0f0ed-7d4b-45f1-b4f8-3c54088d0c1b"/>
+				<textElement textAlignment="Center">
+					<font isBold="true"/>
+				</textElement>
+				<text><![CDATA[Costo Adicional]]></text>
+			</staticText>
+			<staticText>
+				<reportElement style="Column header" x="475" y="19" width="79" height="15" forecolor="#000000" uuid="5422298a-d044-4fd9-985b-a1393c2d3d5f"/>
+				<textElement textAlignment="Center">
+					<font isBold="true"/>
+				</textElement>
+				<text><![CDATA[Precio]]></text>
+			</staticText>
+		</band>
+	</columnHeader>
+	<detail>
+		<band height="16" splitType="Stretch">
+			<line>
+				<reportElement positionType="FixRelativeToBottom" x="0" y="15" width="555" height="1" uuid="d8574283-7900-4de9-ba8f-7702f234f0ee"/>
+				<graphicElement>
+					<pen lineWidth="0.5" lineColor="#999999"/>
+				</graphicElement>
+			</line>
+			<textField>
+				<reportElement style="Detail" x="1" y="1" width="102" height="15" uuid="242283e2-7cea-404f-ab82-da79aa40c717"/>
+				<textFieldExpression><![CDATA[$F{cliente}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement style="Detail" x="103" y="0" width="185" height="15" uuid="b9388ac4-285b-4b93-94d8-1282738bdc94"/>
+				<textElement textAlignment="Center"/>
+				<textFieldExpression><![CDATA[$F{destino}]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,###.00">
+				<reportElement style="Detail" x="306" y="0" width="79" height="15" uuid="16230500-e2c2-446f-9747-df7331032569"/>
+				<textFieldExpression><![CDATA[$F{costo_espera}]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,###.00">
+				<reportElement style="Detail" x="391" y="0" width="79" height="15" uuid="b27d5497-0c42-4144-8f3f-a8cc3518faf4"/>
+				<textFieldExpression><![CDATA[$F{costo_adicional}]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,###.00">
+				<reportElement style="Detail" x="475" y="0" width="79" height="15" uuid="ec4a5476-d41c-441e-ab91-41fd9331dabc"/>
+				<textElement textAlignment="Center"/>
+				<textFieldExpression><![CDATA[$F{precio}]]></textFieldExpression>
+			</textField>
+		</band>
+	</detail>
+	<columnFooter>
+		<band height="5" splitType="Stretch">
+			<line>
+				<reportElement positionType="FixRelativeToBottom" x="0" y="3" width="555" height="1" uuid="f22bc248-d405-455b-9010-ff0f9786dd1e"/>
+				<graphicElement>
+					<pen lineWidth="0.5" lineColor="#999999"/>
+				</graphicElement>
+			</line>
+		</band>
+	</columnFooter>
+	<pageFooter>
+		<band height="20" splitType="Stretch">
+			<textField>
+				<reportElement style="Column header" x="433" y="0" width="80" height="20" uuid="7828bd92-0901-4d47-ab48-b339738ec7b7"/>
+				<textElement textAlignment="Right">
+					<font size="10" isBold="false"/>
+				</textElement>
+				<textFieldExpression><![CDATA["Page "+$V{PAGE_NUMBER}+" of"]]></textFieldExpression>
+			</textField>
+			<textField evaluationTime="Report">
+				<reportElement style="Column header" x="513" y="0" width="40" height="20" uuid="e72ba4ef-75a7-43ee-a798-470d95083aeb"/>
+				<textElement>
+					<font size="10" isBold="false"/>
+				</textElement>
+				<textFieldExpression><![CDATA[" " + $V{PAGE_NUMBER}]]></textFieldExpression>
+			</textField>
+			<textField pattern="EEEEE dd MMMMM yyyy">
+				<reportElement style="Column header" x="0" y="0" width="197" height="20" uuid="3d7ad5a7-9927-40f6-98e5-e6ed1445769d"/>
+				<textElement>
+					<font size="10" isBold="false"/>
+				</textElement>
+				<textFieldExpression><![CDATA[new java.util.Date()]]></textFieldExpression>
+			</textField>
+		</band>
+	</pageFooter>
+	<summary>
+		<band splitType="Stretch"/>
+	</summary>
+</jasperReport>

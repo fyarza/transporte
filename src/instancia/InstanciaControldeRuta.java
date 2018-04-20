@@ -41,11 +41,7 @@ public class InstanciaControldeRuta {
         if(jf==null){
             jf=new ControldeRutas();
           InstanciaControldeRuta.ubicacionVentana(jf,tamanox,tamanoy);
-       }else{
-           jf.dispose();
-          jf=new ControldeRutas();
-          InstanciaControldeRuta.ubicacionVentana(jf,tamanox,tamanoy);
-        }
+       }
             
         return jf;
     }

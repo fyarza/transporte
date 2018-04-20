@@ -33,11 +33,7 @@ public class InstaciaCliente {
         if(jf==null){
             jf=new Cliente();
           InstaciaCliente.ubicacionVentana(jf,tamanox,tamanoy);
-       }else{
-           jf.dispose();
-          jf=new Cliente();
-          InstaciaCliente.ubicacionVentana(jf,tamanox,tamanoy);
-        }
+       }
             
         return jf;
     }
